@@ -1,0 +1,25 @@
+#--------------------------------------------------------------------------
+# Caddy configuration
+# https://caddyserver.com/docs/caddyfile/options
+#--------------------------------------------------------------------------
+
+{
+  debug
+  local_certs
+  auto_https disable_redirects
+  admin 0.0.0.0:2019
+}
+
+#--------------------------------------------------------------------------
+# Reverse proxy
+# https://caddyserver.com/docs/caddyfile/directives/reverse_proxy
+#--------------------------------------------------------------------------
+
+*.bls.local:80, bls.local:80 {
+  reverse_proxy 127.0.0.1:3000
+}
+
+*.bls.local:443, bls.local:443 {
+  tls internal
+  reverse_proxy 127.0.0.1:3000
+}
