@@ -15,11 +15,11 @@
 # https://caddyserver.com/docs/caddyfile/directives/reverse_proxy
 #--------------------------------------------------------------------------
 
-*.bls.local:80, bls.local:80 {
+*.{$SERVER_DOMAIN}:80, {$SERVER_DOMAIN}:80 {
   reverse_proxy 127.0.0.1:3000
 }
 
-*.bls.local:443, bls.local:443 {
+*.{$SERVER_DOMAIN}:443, {$SERVER_DOMAIN}:443 {
   tls internal
   reverse_proxy 127.0.0.1:3000
 }

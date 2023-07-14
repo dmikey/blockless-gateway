@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "rimraf build && tsc",
 		"start": "node build/index.js",
-		"dev:caddy": "docker run --rm --name gateway-server -v $PWD/Caddyfile:/etc/caddy/Caddyfile -p 80:80 -p 443:443 --network host caddy:latest",
+		"dev:caddy": "docker run --rm --name gateway-server -v $PWD/Caddyfile:/etc/caddy/Caddyfile -p 80:80 -p 443:443 --network host --env-file .env caddy:latest",
 		"dev": "nodemon src/index.ts",
 		"format": "prettier --check .",
 		"format:fix": "prettier --write .",
@@ -15,6 +15,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"@fastify/env": "^4.2.0",
 		"dotenv": "^16.3.1",
 		"fastify": "^4.19.2"
 	},
