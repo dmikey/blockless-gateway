@@ -51,6 +51,7 @@ async function authVerifyAPI() {
  */
 export const register = (server: FastifyInstance, _, next) => {
 	server.get('/login', authLoginAPI)
+	server.post('/nonce', authChallengeAPI)
 	server.post('/challenge', authChallengeAPI)
 	server.post('/sign', authSignAPI)
 	server.get('/verify', authVerifyAPI)
