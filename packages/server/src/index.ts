@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import mongoose from 'mongoose'
 import fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 
@@ -39,5 +40,10 @@ server.listen(
 	(err, address) => {
 		if (err) throw err
 		server.log.info('Server started: ', address)
+
+		// Connect database
+		mongoose
+			.connect(process.env.MONGO_DB_URI as string)
+			.then(() => server.log.info('Database Connected'))
 	}
 )

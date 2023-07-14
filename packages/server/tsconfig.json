@@ -5,6 +5,7 @@
 		"target": "ES6",
 		"moduleResolution": "node",
 		"sourceMap": true,
+		"strictNullChecks": true,
 		"outDir": "./build",
 		"baseUrl": ".",
 		"paths": {

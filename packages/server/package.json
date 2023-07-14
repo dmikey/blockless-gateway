@@ -17,7 +17,9 @@
 	"dependencies": {
 		"@fastify/env": "^4.2.0",
 		"dotenv": "^16.3.1",
-		"fastify": "^4.19.2"
+		"fastify": "^4.19.2",
+		"mongoose": "^7.3.4",
+		"node-cache": "^5.1.2"
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.3",
