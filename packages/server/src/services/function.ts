@@ -3,6 +3,8 @@ import { FunctionManifest } from '../models/functionManifest'
 import { IFunctionEnvVarRecord, IFunctionRequestData } from '../interfaces/function'
 import { INameValueArray } from '../interfaces/generic'
 import { decryptValue } from '../utils/encryption'
+import { IHeadNodeResponse } from '../interfaces/headNode'
+import { FastifyRequest } from 'fastify'
 
 /**
  * A utility method to fetch and cache function manifest
@@ -39,6 +41,24 @@ export async function fetchFunctionManifest(functionId: string) {
 }
 
 /**
+ * A utility function to parse request data from a fastify request object
+ *
+ * @param request
+ * @returns
+ */
+export function parseFunctionRequestData(request: FastifyRequest): any {
+	return {
+		path: decodeURIComponent(request.url.split('?')[0]),
+		method: request.method,
+		params: request.params,
+		query: request.query,
+		headers: request.headers,
+		body: request.body
+	}
+}
+
+/**
+ * A utility function to parse env vars key-value array from a function's env var records
  *
  * @param envVars
  * @returns
@@ -57,11 +77,12 @@ export function parseFunctionEnvVars(envVars: IFunctionEnvVarRecord[]): INameVal
 }
 
 /**
+ * A utility function to parse env vars key-value array from a function's request data
  *
  * @param requestData
  * @returns
  */
-export function parseFunctionRequestData(requestData: IFunctionRequestData): INameValueArray {
+export function parseFunctionRequestVars(requestData: IFunctionRequestData): INameValueArray {
 	let requestVars = [] as INameValueArray
 
 	requestVars.push({
@@ -106,4 +127,33 @@ export function parseFunctionRequestData(requestData: IFunctionRequestData): INa
 	}
 
 	return requestVars
+}
+
+/**
+ * A utility function to parse the raw response from the head node
+ *
+ * @param data
+ * @returns
+ */
+export function parseFunctionResponse(data: IHeadNodeResponse) {
+	let body = null as any
+	let type = 'text/html'
+
+	if (data.result.startsWith('data:')) {
+		const bufferData = data.result.split(',')[1]
+		const contentType = data.result.split(',')[0].split(':')[1].split(';')[0]
+		const base64data = Buffer.from(bufferData, 'base64')
+
+		type = contentType
+		body = base64data
+	} else {
+		body = data.result
+	}
+
+	return {
+		status: 200,
+		headers: [],
+		type,
+		body
+	}
 }

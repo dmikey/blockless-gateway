@@ -6,6 +6,7 @@ import { jsonToBase64 } from '../utils/buffer'
 const nodeCache = new NodeCache()
 
 /**
+ * Store head node response in cache
  *
  * @param payload
  * @param data
@@ -22,6 +23,7 @@ export async function storeCache(
 }
 
 /**
+ * Fetch head node response from cache
  *
  * @param payload
  */
