@@ -16,10 +16,10 @@
 #--------------------------------------------------------------------------
 
 *.{$SERVER_DOMAIN}:80, {$SERVER_DOMAIN}:80 {
-  reverse_proxy 127.0.0.1:3000
+  reverse_proxy {$SERVER_HOST}:{$SERVER_PORT}
 }
 
 *.{$SERVER_DOMAIN}:443, {$SERVER_DOMAIN}:443 {
   tls internal
-  reverse_proxy 127.0.0.1:3000
+  reverse_proxy {$SERVER_HOST}:{$SERVER_PORT}
 }
