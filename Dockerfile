@@ -1,17 +1,45 @@
-FROM node:18-alpine
+# Stage 1: Build the Node.js application
+FROM node:18 AS builder
 
-# Create app directory
-WORKDIR /usr/src/app
+# Stage 1: Set the working directory for the application
+WORKDIR /app
 
-# Install app dependencies
+# Stage 1: Copy the package.json and lock files to the container
 COPY package.json ./
 COPY yarn.lock ./
 
 RUN yarn install
 
-# Bundle app source
+# Stage 1: Copy the rest of the application source code
 COPY . .
 
-EXPOSE 3000
+# Stage 1: Build the Node.js application (adjust this based on your project setup)
+RUN npm run build
 
-CMD [ "yarn", "start" ]
+# Stage 2: Build the Caddy image
+FROM caddy:2.7-builder AS caddy
+
+# Stage 2: Using xcaddy build the Caddy binary along with it's modules 
+RUN xcaddy build \
+  --with github.com/caddy-dns/cloudflare
+
+# Stage 3: Create the final image with the Node.js application and Caddy
+FROM node:18-alpine
+
+# Stage 3: Expose the ports for Caddy (port 80, HTTP) and (port 443, HTTPS)
+EXPOSE 80 443
+
+# Stage 3: Set up the Caddy configuration file (Caddyfile)
+COPY Caddyfile /etc/caddy/Caddyfile
+
+# Stage 3: Set the working directory to the location of the Caddyfile
+WORKDIR /etc/caddy
+
+# Stage 3: Copy the built Node.js application from the builder stage
+COPY --from=builder /app /srv
+
+# Stage 3: Copy Caddy from the caddy stage
+COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
+
+# Run the Node.js application and Caddy when the container starts
+CMD ["sh", "-c", "node /srv/build/index.js & caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]

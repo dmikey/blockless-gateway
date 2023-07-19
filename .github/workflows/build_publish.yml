@@ -34,12 +34,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: install modules
-        run: npm i
-
-      - name: build modules
-        run: npm run build
-
       - name: Build and push
         uses: docker/build-push-action@v3
         with:

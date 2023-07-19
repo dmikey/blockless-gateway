@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "rimraf build && tsc",
 		"start": "node build/index.js",
-		"dev:caddy": "docker run --rm --name gateway-server -v $PWD/Caddyfile:/etc/caddy/Caddyfile -p 80:80 -p 443:443 --network host --env-file .env caddy:latest",
+		"dev:caddy": "docker run --rm --name gateway-server -v $PWD/Caddyfile.local:/etc/caddy/Caddyfile -p 80:80 -p 443:443 --network host --env-file .env caddy:latest",
 		"dev": "nodemon src/index.ts",
 		"format": "prettier --check .",
 		"format:fix": "prettier --write .",
