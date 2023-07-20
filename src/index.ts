@@ -8,6 +8,7 @@ import { register as registerSites } from './api/sites'
 import { register as registerFunctions } from './api/functions'
 import { register as registerInvoke } from './api/invoke'
 
+import { API_PATH } from './constants/constants'
 import { EnvSchema } from './interfaces/env'
 
 // Create the server
@@ -17,7 +18,7 @@ const server = fastify({
 
 // Default route
 server.get('/', async () => {
-	return server.printRoutes()
+	return 'Blockless Gateway'
 })
 
 // Health API route
@@ -30,9 +31,9 @@ server.register(fastifyEnv, { schema: EnvSchema })
 
 // Register API Routes
 server.register(registerInvoke)
-server.register(registerAuth, { prefix: 'api/v1/auth' })
-server.register(registerFunctions, { prefix: 'api/v1/functions' })
-server.register(registerSites, { prefix: 'api/v1/sites' })
+server.register(registerAuth, { prefix: `${API_PATH}/auth` })
+server.register(registerFunctions, { prefix: `${API_PATH}/functions` })
+server.register(registerSites, { prefix: `${API_PATH}/sites` })
 
 // Run the server
 server.listen(

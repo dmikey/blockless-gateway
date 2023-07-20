@@ -48,6 +48,7 @@ export async function fetchFunctionManifest(functionId: string) {
  */
 export function parseFunctionRequestData(request: FastifyRequest): any {
 	return {
+		host: request.hostname,
 		path: decodeURIComponent(request.url.split('?')[0]),
 		method: request.method,
 		params: request.params,

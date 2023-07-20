@@ -1,4 +1,5 @@
-import { FastifyInstance } from 'fastify'
+import { FastifyInstance, FastifyReply } from 'fastify'
+import { REGEX_HOST_MATCH } from '../constants/regex'
 
 /**
  * API Route to login
@@ -38,7 +39,7 @@ async function authSignAPI() {
  * @param reply
  * @returns
  */
-async function authVerifyAPI() {
+async function authVerifyAPI(request, reply: FastifyReply) {
 	return 'Verify'
 }
 
@@ -50,11 +51,11 @@ async function authVerifyAPI() {
  * @param next
  */
 export const register = (server: FastifyInstance, _, next) => {
-	server.get('/login', authLoginAPI)
-	server.post('/nonce', authChallengeAPI)
-	server.post('/challenge', authChallengeAPI)
-	server.post('/sign', authSignAPI)
-	server.get('/verify', authVerifyAPI)
+	server.get('/login', { constraints: { host: REGEX_HOST_MATCH } }, authLoginAPI)
+	server.post('/nonce', { constraints: { host: REGEX_HOST_MATCH } }, authChallengeAPI)
+	server.post('/challenge', { constraints: { host: REGEX_HOST_MATCH } }, authChallengeAPI)
+	server.post('/sign', { constraints: { host: REGEX_HOST_MATCH } }, authSignAPI)
+	server.get('/verify', { constraints: { host: REGEX_HOST_MATCH } }, authVerifyAPI)
 
 	next()
 }
