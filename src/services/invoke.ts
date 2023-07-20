@@ -1,3 +1,4 @@
+import { BaseErrors } from '../constants/errors'
 import { FunctionType } from '../constants/enum'
 import { IFunctionRecord, IFunctionRequestData } from '../interfaces/function'
 import { Functions } from '../models/function'
@@ -30,14 +31,14 @@ export async function lookupAndInvokeFunction(
 			break
 	}
 
-	if (!filter) throw new Error('Function not found')
+	if (!filter) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
 
 	const fn: IFunctionRecord = await Functions.findOne(filter)
 		.select('+envVars.value')
 		.select('+envVars.iv')
 
-	if (!fn) throw new Error('Function Not Found')
-	if (!fn.functionId) throw new Error('Function not deployed')
+	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
+	if (!fn.functionId) throw new BaseErrors.ERR_FUNCTION_NOT_DEPLOYED()
 
 	return invoke(fn, requestData)
 }
@@ -50,7 +51,7 @@ export async function lookupAndInvokeFunction(
 async function invoke(fn: IFunctionRecord, requestData: IFunctionRequestData) {
 	// Fetch function's manifest file
 	const manifest = await fetchFunctionManifest(fn.functionId)
-	if (!manifest) throw new Error('Manifest not found')
+	if (!manifest) throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
 
 	// Prepare request data and environment variables
 	const envVars = parseFunctionEnvVars(fn.envVars)

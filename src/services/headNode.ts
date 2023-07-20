@@ -3,6 +3,7 @@ import { IFunctionManifestRecord } from '../interfaces/function'
 import { IHeadNodePayload, IHeadNodeResponse } from '../interfaces/headNode'
 import { INameValueArray } from '../interfaces/generic'
 import { fetchCache, storeCache } from './headNodeCache'
+import { BaseErrors } from '../constants/errors'
 
 /**
  * Request invocation for a function on the head node
@@ -30,7 +31,7 @@ export async function callHeadNodeFunction(
 		}
 	}
 
-	throw new Error('Failed to execute function')
+	throw new BaseErrors.ERR_HEAD_FAILED_TO_EXECUTE()
 }
 
 /**

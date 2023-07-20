@@ -5,6 +5,7 @@ import { INameValueArray } from '../interfaces/generic'
 import { decryptValue } from '../utils/encryption'
 import { IHeadNodeResponse } from '../interfaces/headNode'
 import { FastifyRequest } from 'fastify'
+import { BaseErrors } from '../constants/errors'
 
 /**
  * A utility method to fetch and cache function manifest
@@ -21,9 +22,10 @@ export async function fetchFunctionManifest(functionId: string) {
 		// If not found or not valid
 		if (!(!!functionManifest && !!functionManifest.manifest)) {
 			const manifestResponse = await axios.get(`https://${functionId}.ipfs.w3s.link/manifest.json`)
-			if (!(!!manifestResponse && !!manifestResponse.data)) throw new Error('Manifest not found.')
+			if (!(!!manifestResponse && !!manifestResponse.data))
+				throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
 			if (!(!!manifestResponse.data.entry && !!manifestResponse.data.contentType))
-				throw new Error('Invalid manifest.')
+				throw new BaseErrors.ERR_FUNCTION_MANIFEST_INVALID()
 
 			// Set manifest to respond
 			manifest = manifestResponse.data

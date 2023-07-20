@@ -23,9 +23,9 @@ export interface BaseErrorConstructor<
  * @param errorCodesConfig
  * @returns
  */
-export function createErrorClasses<T extends Record<string, { statusCode?: number }>>(
-	errorCodesConfig: T
-): { [K in keyof T]: BaseErrorConstructor<any> } {
+export function createErrorClasses<
+	T extends Record<string, { statusCode?: number; message?: string }>
+>(errorCodesConfig: T): { [K in keyof T]: BaseErrorConstructor<any> } {
 	const errorCodes: any = {}
 
 	for (const code in errorCodesConfig) {
@@ -36,7 +36,7 @@ export function createErrorClasses<T extends Record<string, { statusCode?: numbe
 			public statusCode?: number
 
 			constructor(message: string) {
-				super(message || code)
+				super(message || errorProps?.message || code)
 				this.code = code
 				this.statusCode = statusCode
 			}
