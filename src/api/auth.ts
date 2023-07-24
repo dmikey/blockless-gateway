@@ -1,7 +1,18 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { REGEX_HOST_MATCH } from '../constants/regex'
-import { generateUserChallenge, getUserWallet } from '../services/auth'
-import { AuthChallengePostRequest, UserWalletRequestSchema } from '../interfaces/auth'
+import {
+	generateUserChallenge,
+	getUserWallet,
+	getUserWalletByType,
+	verifyUserWalletSignature
+} from '../services/auth'
+import {
+	AuthChallengePostRequest,
+	AuthSignPostRequest,
+	AuthSignPostSchema,
+	UserWalletRequestSchema
+} from '../interfaces/auth'
+import { BaseErrors } from '../constants/errors'
 
 /**
  * API Route to login
@@ -31,22 +42,35 @@ async function authChallengeAPI(request: AuthChallengePostRequest) {
 }
 
 /**
+ * API route to verify user signature with a pre-defined nonce
  *
  * @param request
  * @param reply
  * @returns
  */
-async function authSignAPI(request: FastifyRequest, reply: FastifyReply) {
+async function authSignAPI(request: AuthSignPostRequest) {
+	const { walletType, signature, publicAddress } = request.body
+	const userWallet = await getUserWalletByType(walletType, publicAddress)
+
+	// Signature check
+	const isSignatureValid = await verifyUserWalletSignature({
+		userWallet,
+		signature
+	})
+
+	if (!isSignatureValid) throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
+
+	// Generate a JWT if signature is valid
 	const token = (this as FastifyInstance).jwt.sign(
-		{ publicAddress: '', walletType: '' },
+		{ publicAddress, walletType },
 		{ expiresIn: '24h' }
 	)
-	// const token = request.jwt.sign({ publicAddress, walletType }, { expiresIn: '24h' })
 
 	return { token }
 }
 
 /**
+ * API route to check whether an issued JWT token is valid
  *
  * @param request
  * @param reply
@@ -61,13 +85,6 @@ async function authVerifyAPI(request: FastifyRequest, reply: FastifyReply) {
 	}
 }
 
-/**
- * Register all fastify routes for Authentication
- *
- * @param server
- * @param _
- * @param next
- */
 export const register = (server: FastifyInstance, _, next) => {
 	server.get('/login', { constraints: { host: REGEX_HOST_MATCH } }, authLoginAPI)
 
@@ -86,10 +103,18 @@ export const register = (server: FastifyInstance, _, next) => {
 			constraints: { host: REGEX_HOST_MATCH },
 			schema: { body: UserWalletRequestSchema }
 		},
-		authChallengeAPI.bind(server)
+		authChallengeAPI
 	)
 
-	server.post('/sign', { constraints: { host: REGEX_HOST_MATCH } }, authSignAPI)
+	server.post(
+		'/sign',
+		{
+			constraints: { host: REGEX_HOST_MATCH },
+			schema: { body: AuthSignPostSchema }
+		},
+		authSignAPI
+	)
+
 	server.get('/verify', { constraints: { host: REGEX_HOST_MATCH } }, authVerifyAPI)
 
 	next()

@@ -11,9 +11,17 @@ const errorCodesConfig = {
 		statusCode: 401,
 		message: 'User auth challenge failed to generate.'
 	},
+	ERR_USER_NOT_FOUND: {
+		statusCode: 404,
+		message: 'User not found.'
+	},
 	ERR_USER_WALLET_NOT_FOUND: {
 		statusCode: 404,
 		message: 'User wallet not found.'
+	},
+	ERR_USER_SIGNATURE_MISMATCH: {
+		statusCode: 401,
+		message: 'User signature does not match.'
 	}
 }
 
