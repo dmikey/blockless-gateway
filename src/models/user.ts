@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 
 const UserSchema = new mongoose.Schema({
-	nonce: String,
+	nonce: {
+		type: String,
+		required: true
+	},
 
 	ethAddress: String,
 	cosmosAddress: String,

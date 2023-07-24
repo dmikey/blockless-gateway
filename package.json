@@ -15,12 +15,18 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"@cosmjs/amino": "^0.31.0",
+		"@ethereumjs/util": "^8.1.0",
 		"@fastify/env": "^4.2.0",
+		"@fastify/jwt": "^7.2.0",
+		"@keplr-wallet/cosmos": "^0.12.16",
+		"@metamask/eth-sig-util": "^6.0.0",
 		"axios": "^1.4.0",
 		"dotenv": "^16.3.1",
 		"fastify": "^4.19.2",
 		"mongoose": "^7.3.4",
-		"node-cache": "^5.1.2"
+		"node-cache": "^5.1.2",
+		"tweetnacl": "^1.0.3"
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.3",

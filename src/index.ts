@@ -2,6 +2,7 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 import fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
+import fastifyJwt from '@fastify/jwt'
 
 import { register as registerAuth } from './api/auth'
 import { register as registerSites } from './api/sites'
@@ -28,6 +29,7 @@ server.get('/health', async () => {
 
 // Register configuration
 server.register(fastifyEnv, { schema: EnvSchema })
+server.register(fastifyJwt, { secret: process.env.JWT_SECRET! })
 
 // Register API Routes
 server.register(registerInvoke)
