@@ -46,7 +46,7 @@ export const AuthSignPostSchema = {
 			enum: ['metamask', 'keplr', 'martian']
 		},
 		signature: {
-			type: 'string'
+			type: ['string', 'object']
 		},
 		publicAddress: {
 			type: 'string'

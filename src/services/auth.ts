@@ -1,3 +1,10 @@
+import {
+	StdSignature,
+	decodeSignature as decodeKeplrSignature,
+	isSecp256k1Pubkey
+} from '@cosmjs/amino'
+import { verifyADR36Amino } from '@keplr-wallet/cosmos'
+import nacl from 'tweetnacl'
 import crypto from 'crypto'
 import { bufferToHex } from '@ethereumjs/util'
 import { recoverPersonalSignature } from '@metamask/eth-sig-util'
@@ -58,8 +65,8 @@ export async function getUserWalletByType(
  * @returns
  */
 export async function getUser(userWallet: UserWallet) {
-	let userLookupQuery: { [key: string]: string } = {}
-	userLookupQuery[userWallet.walletKey] = userWallet.walletAddress
+	let userLookupQuery: { [key: string]: unknown } = {}
+	userLookupQuery[userWallet.walletKey] = { $regex: new RegExp(userWallet.walletAddress, 'i') }
 
 	const user = await User.findOne(userLookupQuery)
 	if (!user) throw new BaseErrors.ERR_USER_NOT_FOUND()
@@ -96,10 +103,12 @@ export async function generateUserChallenge({
  */
 export async function verifyUserWalletSignature({
 	userWallet,
-	signature
+	signature,
+	publicKey
 }: {
 	userWallet: UserWallet
-	signature: string
+	signature: string | StdSignature
+	publicKey?: string
 }): Promise<boolean> {
 	const user = await getUser(userWallet)
 	let msg = `unique nonce ${user.nonce}`
@@ -109,10 +118,34 @@ export async function verifyUserWalletSignature({
 			const msgBufferHex = bufferToHex(Buffer.from(msg, 'utf8'))
 			const address = recoverPersonalSignature({
 				data: msgBufferHex,
-				signature
+				signature: signature as string
 			})
 
 			return address.toLowerCase() === userWallet.walletAddress.toLowerCase()
+		case 'keplr':
+			if (!isSecp256k1Pubkey((signature as StdSignature).pub_key))
+				throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
+
+			const decodedSig = decodeKeplrSignature(signature as StdSignature)
+
+			return verifyADR36Amino(
+				'bls',
+				userWallet.walletAddress,
+				Buffer.from(msg, 'utf8'),
+				decodedSig.pubkey,
+				decodedSig.signature
+			)
+
+		case 'martian':
+			if (!publicKey) throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
+
+			msg = `APTOS\nmessage: unique nonce ${user?.nonce}`
+
+			return nacl.sign.detached.verify(
+				new TextEncoder().encode(msg),
+				Buffer.from((signature as string).slice(2), 'hex'),
+				Buffer.from(publicKey.slice(2), 'hex')
+			)
 	}
 
 	return false

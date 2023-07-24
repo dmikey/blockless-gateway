@@ -49,13 +49,14 @@ async function authChallengeAPI(request: AuthChallengePostRequest) {
  * @returns
  */
 async function authSignAPI(request: AuthSignPostRequest) {
-	const { walletType, signature, publicAddress } = request.body
+	const { walletType, signature, publicAddress, publicKey } = request.body
 	const userWallet = await getUserWalletByType(walletType, publicAddress)
 
 	// Signature check
 	const isSignatureValid = await verifyUserWalletSignature({
 		userWallet,
-		signature
+		signature,
+		publicKey
 	})
 
 	if (!isSignatureValid) throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
