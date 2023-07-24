@@ -51,6 +51,13 @@ export async function getUserWallet(userWalletRequest: UserWalletRequest): Promi
 	return { walletKey: key, walletType: type, walletAddress: address }
 }
 
+/**
+ * Get a user wallet object by type and wallet address
+ *
+ * @param type
+ * @param address
+ * @returns
+ */
 export async function getUserWalletByType(
 	type: UserWalletType,
 	address: string
@@ -97,8 +104,9 @@ export async function generateUserChallenge({
 }
 
 /**
+ * Verify a user wallet signature for metamask, keplr and martian wallets
  *
- * @param param0
+ * @param params
  * @returns
  */
 export async function verifyUserWalletSignature({

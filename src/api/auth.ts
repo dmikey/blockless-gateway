@@ -81,7 +81,7 @@ async function authVerifyAPI(request: FastifyRequest, reply: FastifyReply) {
 	try {
 		await request.jwtVerify()
 		reply.status(200)
-	} catch (err) {
+	} catch {
 		reply.status(401)
 	}
 }
