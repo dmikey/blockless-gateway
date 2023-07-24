@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
 import { lookupAndInvokeFunction } from '../services/invoke'
 import { parseFunctionRequestData } from '../services/function'
-import { REGEX_HOST_NOT_MATCH } from '../constants/regex'
+import { REGEX_HOST_MATCH, REGEX_HOST_NOT_MATCH } from '../constants/regex'
 
 /**
  * Invoke a function for a hostname, directly via a fastify request
@@ -52,7 +52,7 @@ export const register = (server: FastifyInstance, opts: FastifyPluginOptions, ne
 		handler: invokeHostnameAPI
 	})
 
-	server.post('/invoke/:id', invokePathAPI)
+	server.post('/invoke/:id', { constraints: { host: REGEX_HOST_MATCH } }, invokePathAPI)
 
 	next()
 }
