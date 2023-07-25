@@ -1,16 +1,28 @@
 import 'dotenv/config'
 import mongoose from 'mongoose'
-import fastify from 'fastify'
+import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
+import fastifyPlugin from 'fastify-plugin'
 
 import { register as registerAuth } from './api/auth'
 import { register as registerSites } from './api/sites'
 import { register as registerFunctions } from './api/functions'
 import { register as registerInvoke } from './api/invoke'
 
+import { authenticateHook } from './hooks/authenticate'
+
 import { API_PATH } from './constants/constants'
 import { EnvSchema } from './interfaces/env'
+
+declare module '@fastify/jwt' {
+	interface FastifyJWT {
+		user: {
+			publicAddress: string
+			walletType: string
+		}
+	}
+}
 
 // Create the server
 const server = fastify({
@@ -30,6 +42,9 @@ server.get('/health', async () => {
 // Register configuration
 server.register(fastifyEnv, { schema: EnvSchema })
 server.register(fastifyJwt, { secret: process.env.JWT_SECRET! })
+
+// Hooks
+server.register(fastifyPlugin(authenticateHook))
 
 // Register API Routes
 server.register(registerInvoke)
