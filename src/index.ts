@@ -1,12 +1,11 @@
 import 'dotenv/config'
 import mongoose from 'mongoose'
-import fastify, { FastifyReply, FastifyRequest } from 'fastify'
+import fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyPlugin from 'fastify-plugin'
 
 import { register as registerAuth } from './api/auth'
-import { register as registerSites } from './api/sites'
 import { register as registerFunctions } from './api/functions'
 import { register as registerInvoke } from './api/invoke'
 
@@ -14,15 +13,6 @@ import { authenticateHook } from './hooks/authenticate'
 
 import { API_PATH } from './constants/constants'
 import { EnvSchema } from './interfaces/env'
-
-declare module '@fastify/jwt' {
-	interface FastifyJWT {
-		user: {
-			publicAddress: string
-			walletType: string
-		}
-	}
-}
 
 // Create the server
 const server = fastify({
@@ -49,8 +39,8 @@ server.register(fastifyPlugin(authenticateHook))
 // Register API Routes
 server.register(registerInvoke)
 server.register(registerAuth, { prefix: `${API_PATH}/auth` })
-server.register(registerFunctions, { prefix: `${API_PATH}/functions` })
-server.register(registerSites, { prefix: `${API_PATH}/sites` })
+server.register(registerFunctions, { prefix: `${API_PATH}/functions`, type: 'function' })
+server.register(registerFunctions, { prefix: `${API_PATH}/sites`, type: 'site' })
 
 // Run the server
 server.listen(
@@ -62,6 +52,10 @@ server.listen(
 		// Connect database
 		mongoose
 			.connect(process.env.MONGO_DB_URI as string)
-			.then(() => server.log.info('Database Connected'))
+			.then(() => server.log.info('Database connected'))
+			.catch(() => {
+				server.log.info('Database connection failed')
+				return server.close()
+			})
 	}
 )

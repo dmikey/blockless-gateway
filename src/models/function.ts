@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { FunctionTypes, FunctionType, FunctionStatuses } from '../constants/enum'
+import { IFunctionRecord } from '../interfaces/function'
 
 const FunctionEnvVars = new mongoose.Schema({
 	name: String,
@@ -43,6 +44,8 @@ const FunctionSchema = new mongoose.Schema(
 		},
 
 		envVars: [FunctionEnvVars],
+
+		subdomain: { type: String, required: true },
 		domainMappings: [FunctionDomainMapping]
 	},
 	{
@@ -50,4 +53,5 @@ const FunctionSchema = new mongoose.Schema(
 	}
 )
 
-export const Functions = mongoose.model('Function', FunctionSchema)
+export type IFunctionModel = IFunctionRecord & mongoose.Document
+export const Functions = mongoose.model<IFunctionModel>('Function', FunctionSchema)

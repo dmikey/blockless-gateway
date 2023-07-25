@@ -17,7 +17,7 @@ import {
 	UserWalletType,
 	UserWalletTypeKey,
 	UserWalletTypeKeys
-} from '../interfaces/auth'
+} from '../interfaces/user'
 
 /**
  * Get a user wallet object from a request body containing a wallet address

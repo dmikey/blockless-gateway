@@ -16,13 +16,17 @@ import { invokeCachedHeadNodeFunction, invokeHeadNodeFunction } from './headNode
  * @param domain
  */
 export async function lookupAndInvokeFunction(
-	type: 'domain' | 'invocationId',
+	type: 'subdomain' | 'domain' | 'invocationId',
 	value: string,
 	requestData: IFunctionRequestData
 ) {
 	let filter: object | null = null
 
 	switch (type) {
+		case 'subdomain':
+			const subdomainValue = value.replace(`.${process.env.SERVER_DOMAIN!}`, '')
+			filter = { $or: [{ subdomain: subdomainValue }, { 'domainMappings.domain': value }] }
+			break
 		case 'domain':
 			filter = { 'domainMappings.domain': value }
 			break
