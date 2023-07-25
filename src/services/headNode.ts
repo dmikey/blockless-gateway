@@ -35,6 +35,31 @@ export async function callHeadNodeFunction(
 }
 
 /**
+ * Request installation for a function on the head node
+ *
+ * @param payload
+ * @param count the number of retries
+ * @returns
+ */
+export async function installHeadNodeFunction(
+	functionId: string,
+	count: number = 1
+): Promise<IHeadNodeResponse> {
+	const response = await axios.post(
+		`${process.env.HEAD_NODE_HOST}/api/v1/functions/install?count=${count}`,
+		{
+			cid: functionId
+		}
+	)
+
+	if (!(response.data.code === '200' || response.data.code === 200)) {
+		throw new BaseErrors.ERR_HEAD_FAILED_TO_INSTALL()
+	}
+
+	return response.data
+}
+
+/**
  * Fetch a cached response for a payload, call head node if cache is not available
  *
  * @param payload

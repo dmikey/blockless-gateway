@@ -1,22 +1,13 @@
 import { FastifyRequest } from 'fastify'
+import { UserWalletRequest, UserWalletType } from './user'
 
-export type UserWalletType = 'metamask' | 'keplr' | 'martian'
-export type UserWalletTypeKey = 'ethAddress' | 'cosmosAddress' | 'aptosAddress'
-export type UserWalletRequest = { [key in UserWalletTypeKey]: string }
+// Schemas
 
-export interface UserWallet {
-	walletKey: UserWalletTypeKey
-	walletType: UserWalletType
-	walletAddress: string
-}
+export type AuthChallengePostRequest = FastifyRequest<{
+	Body: UserWalletRequest
+}>
 
-export const UserWalletTypeKeys: { [key in UserWalletType]: UserWalletTypeKey } = {
-	metamask: 'ethAddress',
-	keplr: 'cosmosAddress',
-	martian: 'aptosAddress'
-}
-
-export const UserWalletRequestSchema = {
+export const AuthChallengePostSchema = {
 	type: 'object',
 	properties: {
 		ethAddress: {
@@ -36,6 +27,15 @@ export const UserWalletRequestSchema = {
 	],
 	additionalProperties: false
 }
+
+export type AuthSignPostRequest = FastifyRequest<{
+	Body: {
+		walletType: UserWalletType
+		signature: string
+		publicAddress: string
+		publicKey?: string
+	}
+}>
 
 export const AuthSignPostSchema = {
 	type: 'object',
@@ -68,16 +68,3 @@ export const AuthSignPostSchema = {
 	],
 	additionalProperties: false
 }
-
-export type AuthSignPostRequest = FastifyRequest<{
-	Body: {
-		walletType: UserWalletType
-		signature: string
-		publicAddress: string
-		publicKey?: string
-	}
-}>
-
-export type AuthChallengePostRequest = FastifyRequest<{
-	Body: UserWalletRequest
-}>

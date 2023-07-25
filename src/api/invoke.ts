@@ -14,7 +14,7 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
 	const domain = request.hostname
 	const requestData = parseFunctionRequestData(request)
 
-	const response = await lookupAndInvokeFunction('domain', domain, requestData)
+	const response = await lookupAndInvokeFunction('subdomain', domain, requestData)
 	reply.status(response.status).headers(response.headers).type(response.type).send(response.body)
 }
 

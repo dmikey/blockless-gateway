@@ -10,7 +10,7 @@ import {
 	AuthChallengePostRequest,
 	AuthSignPostRequest,
 	AuthSignPostSchema,
-	UserWalletRequestSchema
+	AuthChallengePostSchema
 } from '../interfaces/auth'
 import { BaseErrors } from '../constants/errors'
 
@@ -93,7 +93,7 @@ export const register = (server: FastifyInstance, _, next) => {
 		'/nonce',
 		{
 			constraints: { host: REGEX_HOST_MATCH },
-			schema: { body: UserWalletRequestSchema }
+			schema: { body: AuthChallengePostSchema }
 		},
 		authChallengeAPI
 	)
@@ -102,7 +102,7 @@ export const register = (server: FastifyInstance, _, next) => {
 		'/challenge',
 		{
 			constraints: { host: REGEX_HOST_MATCH },
-			schema: { body: UserWalletRequestSchema }
+			schema: { body: AuthChallengePostSchema }
 		},
 		authChallengeAPI
 	)
