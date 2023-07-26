@@ -107,6 +107,7 @@ export async function listFunctions(
 				createdAt: 1,
 				updatedAt: 1,
 				requests: 1,
+				subdomain: 1,
 				domainMappings: 1
 			}
 		},
