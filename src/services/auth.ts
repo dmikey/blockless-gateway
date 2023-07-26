@@ -59,7 +59,7 @@ export async function getUserWallet(userWalletRequest: UserWalletRequest): Promi
  * @returns
  */
 export async function getUserWalletByType(
-	type: UserWalletType,
+	type: UserWalletType = 'metamask',
 	address: string
 ): Promise<UserWallet> {
 	return { walletKey: UserWalletTypeKeys[type], walletType: type, walletAddress: address }
@@ -155,6 +155,4 @@ export async function verifyUserWalletSignature({
 				Buffer.from(publicKey.slice(2), 'hex')
 			)
 	}
-
-	return false
 }

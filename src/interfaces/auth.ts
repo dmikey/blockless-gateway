@@ -39,7 +39,7 @@ export type AuthSignPostRequest = FastifyRequest<{
 
 export const AuthSignPostSchema = {
 	type: 'object',
-	required: ['walletType', 'signature', 'publicAddress'],
+	required: ['signature', 'publicAddress'],
 	properties: {
 		walletType: {
 			type: 'string',
@@ -55,16 +55,5 @@ export const AuthSignPostSchema = {
 			type: 'string'
 		}
 	},
-	allOf: [
-		{
-			if: { properties: { walletType: { enum: ['martian'] } } },
-			then: {
-				required: ['walletType', 'signature', 'publicAddress', 'publicKey']
-			},
-			else: {
-				required: ['walletType', 'signature', 'publicAddress']
-			}
-		}
-	],
 	additionalProperties: false
 }
