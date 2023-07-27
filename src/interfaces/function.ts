@@ -33,6 +33,8 @@ export interface IFunctionRecord extends IDocument {
 	envVars: IFunctionEnvVarRecord[]
 	subdomain: string
 	domainMappings: { domain: string }[]
+
+	manifest?: IFunctionManifestRecord
 }
 
 // Schemas

@@ -15,6 +15,8 @@ const mimeTypesForCaching = [
 	'application/javascript',
 	'application/font-woff',
 	'application/font-woff2',
+	'font/woff',
+	'font/woff2',
 	'application/vnd.ms-fontobject',
 	'application/x-font-ttf',
 	'audio/mpeg',

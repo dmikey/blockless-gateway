@@ -37,9 +37,32 @@ export async function lookupAndInvokeFunction(
 
 	if (!filter) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
 
-	const fn: IFunctionRecord = await Functions.findOne(filter)
-		.select('+envVars.value')
-		.select('+envVars.iv')
+	const result = await Functions.aggregate([
+		{ $match: filter },
+		{
+			$lookup: {
+				from: 'functionmanifests',
+				localField: 'functionId',
+				foreignField: 'functionId',
+				as: 'manifests'
+			}
+		},
+		{ $unwind: { path: '$manifests', preserveNullAndEmptyArrays: true } },
+		{
+			$project: {
+				_id: 1,
+				functionId: 1,
+				type: 1,
+				envVars: 1,
+				manifest: '$manifests.manifest'
+			}
+		},
+		{
+			$limit: 1
+		}
+	])
+
+	const fn = result.length > 0 ? result[0] : null
 
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
 	if (!fn.functionId) throw new BaseErrors.ERR_FUNCTION_NOT_DEPLOYED()
@@ -54,8 +77,14 @@ export async function lookupAndInvokeFunction(
  */
 async function invoke(fn: IFunctionRecord, requestData: IFunctionRequestData) {
 	// Fetch function's manifest file
-	const manifest = await fetchFunctionManifest(fn.functionId)
-	if (!manifest) throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
+	let manifest = fn.manifest
+
+	if (!manifest) {
+		const cachedManifest = await fetchFunctionManifest(fn.functionId)
+		if (!cachedManifest) throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
+
+		manifest = cachedManifest
+	}
 
 	// Prepare request data and environment variables
 	const envVars = parseFunctionEnvVars(fn.envVars)
