@@ -4,6 +4,7 @@ import { FastifyRequest } from 'fastify'
 import { FunctionManifest } from '../models/functionManifest'
 import {
 	IFunctionEnvVarRecord,
+	IFunctionManifestRecord,
 	IFunctionRecord,
 	IFunctionRequestData
 } from '../interfaces/function'
@@ -354,6 +355,21 @@ export async function fetchFunctionManifest(functionId: string) {
 	} catch (error) {
 		return null
 	}
+}
+
+/**
+ * A utility method to validate and store a function manifest
+ *
+ * @param functionId
+ * @param manifest
+ * @returns
+ */
+export async function storeFunctionManifest(functionId: string, manifest: IFunctionManifestRecord) {
+	if (!manifest) throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
+	if (!(!!manifest.entry && !!manifest.contentType))
+		throw new BaseErrors.ERR_FUNCTION_MANIFEST_INVALID()
+
+	return await FunctionManifest.findOneAndUpdate({ functionId }, { manifest }, { upsert: true })
 }
 
 /**
