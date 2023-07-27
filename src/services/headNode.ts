@@ -18,17 +18,19 @@ export async function callHeadNodeFunction(
 ): Promise<IHeadNodeResponse> {
 	let i = 0
 
-	while (i <= retries) {
-		const response = await axios.post(
-			`${process.env.HEAD_NODE_HOST}/api/v1/functions/execute`,
-			payload
-		)
+	while (i < retries) {
+		try {
+			const response = await axios.post(
+				`${process.env.HEAD_NODE_HOST}/api/v1/functions/execute`,
+				payload
+			)
 
-		if (response.data.code === '200' || response.data.code === 200) {
-			return response.data
-		} else {
-			i++
-		}
+			if (response.data.code === '200' || response.data.code === 200) {
+				return response.data
+			}
+		} catch (error) {}
+
+		i++
 	}
 
 	throw new BaseErrors.ERR_HEAD_FAILED_TO_EXECUTE()
