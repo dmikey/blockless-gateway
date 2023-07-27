@@ -16,10 +16,12 @@
 #--------------------------------------------------------------------------
 
 *.{$SERVER_DOMAIN}:80, {$SERVER_DOMAIN}:80 {
+  encode zstd gzip
   reverse_proxy {$SERVER_HOST}:{$SERVER_PORT}
 }
 
 *.{$SERVER_DOMAIN}:443, {$SERVER_DOMAIN}:443 {
   tls internal
+  encode zstd gzip
   reverse_proxy {$SERVER_HOST}:{$SERVER_PORT}
 }

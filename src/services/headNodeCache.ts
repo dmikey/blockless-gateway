@@ -11,6 +11,7 @@ const mimeTypesForCaching = [
 	'image/webp',
 	'image/svg+xml',
 	'text/css',
+	'text/html',
 	'application/javascript',
 	'application/font-woff',
 	'application/font-woff2',
@@ -26,7 +27,12 @@ const mimeTypesForCaching = [
 	'application/zip',
 	'application/x-rar-compressed',
 	'application/x-tar',
-	'application/x-gzip'
+	'application/x-gzip',
+	'image/vnd.microsoft.icon',
+	'image/x-icon',
+	'image/ico',
+	'text/ico',
+	'application/ico'
 ]
 
 /**
