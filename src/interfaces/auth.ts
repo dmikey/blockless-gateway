@@ -43,7 +43,8 @@ export const AuthSignPostSchema = {
 	properties: {
 		walletType: {
 			type: 'string',
-			enum: ['metamask', 'keplr', 'martian']
+			enum: ['eth', 'metamask', 'keplr', 'martian'],
+			default: 'eth'
 		},
 		signature: {
 			type: ['string', 'object']

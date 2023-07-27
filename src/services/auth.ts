@@ -59,7 +59,7 @@ export async function getUserWallet(userWalletRequest: UserWalletRequest): Promi
  * @returns
  */
 export async function getUserWalletByType(
-	type: UserWalletType = 'metamask',
+	type: UserWalletType,
 	address: string
 ): Promise<UserWallet> {
 	return { walletKey: UserWalletTypeKeys[type], walletType: type, walletAddress: address }
@@ -122,14 +122,6 @@ export async function verifyUserWalletSignature({
 	let msg = `unique nonce ${user.nonce}`
 
 	switch (userWallet.walletType) {
-		case 'metamask':
-			const msgBufferHex = bufferToHex(Buffer.from(msg, 'utf8'))
-			const address = recoverPersonalSignature({
-				data: msgBufferHex,
-				signature: signature as string
-			})
-
-			return address.toLowerCase() === userWallet.walletAddress.toLowerCase()
 		case 'keplr':
 			if (!isSecp256k1Pubkey((signature as StdSignature).pub_key))
 				throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
@@ -154,5 +146,13 @@ export async function verifyUserWalletSignature({
 				Buffer.from((signature as string).slice(2), 'hex'),
 				Buffer.from(publicKey.slice(2), 'hex')
 			)
+		default:
+			const msgBufferHex = bufferToHex(Buffer.from(msg, 'utf8'))
+			const address = recoverPersonalSignature({
+				data: msgBufferHex,
+				signature: signature as string
+			})
+
+			return address.toLowerCase() === userWallet.walletAddress.toLowerCase()
 	}
 }
