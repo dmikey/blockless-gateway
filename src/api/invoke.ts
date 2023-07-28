@@ -35,7 +35,7 @@ async function invokePathAPI(request: FastifyRequest, reply: FastifyReply) {
 
 export const register = (server: FastifyInstance, opts: FastifyPluginOptions, next) => {
 	server.route({
-		method: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+		method: ['HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 		url: '/',
 		constraints: {
 			host: REGEX_HOST_NOT_MATCH
@@ -44,7 +44,7 @@ export const register = (server: FastifyInstance, opts: FastifyPluginOptions, ne
 	})
 
 	server.route({
-		method: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+		method: ['HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 		url: '/*',
 		constraints: {
 			host: REGEX_HOST_NOT_MATCH
