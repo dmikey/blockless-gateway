@@ -1,21 +1,15 @@
 # Blockless Gateway
 
-```
-└── / (GET, HEAD)
-    / (GET) {"host":{}}
-    ├── health (GET, HEAD)
-    ├── invoke/
-    │   └── :path (GET, HEAD)
-    └── api/v1/
-        ├── auth/
-        │   ├── login (GET, HEAD)
-        │   ├── challenge (POST)
-        │   ├── sign (POST)
-        │   └── verify (GET, HEAD)
-        ├── functions (GET, HEAD, POST)
-        │   └── / (GET, HEAD, POST)
-        │       └── :id (GET, HEAD, PATCH, DELETE)
-        └── sites (GET, HEAD, POST)
-            └── / (GET, HEAD, POST)
-                └── :id (GET, HEAD, PATCH, DELETE)
-```
+## Development
+
+To start the development server, run
+
+`yarn dev`
+
+and to setup the Caddy reverse proxy locally, run
+
+`yarn dev:caddy`
+
+## Contributing
+
+See src/README for information on contributing to the Blockless Gateway project.
