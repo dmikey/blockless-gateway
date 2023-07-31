@@ -26,6 +26,11 @@ server.get('/', async () => {
 	return 'Blockless Gateway'
 })
 
+// API version
+server.get('/version', async () => ({
+	apiVersion: 1
+}))
+
 // Health API route
 server.get('/health', async () => {
 	return { status: 'ok' }
