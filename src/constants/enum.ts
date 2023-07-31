@@ -9,7 +9,8 @@ export enum FunctionStatus {
 	PREPARING = 'preparing',
 	DEPLOYING = 'deploying',
 	FAILED = 'failed',
-	DEPLOYED = 'deployed'
+	DEPLOYED = 'deployed',
+	STOPPED = 'stopped'
 }
 
 export const FunctionTypes = [FunctionType.FUNCTION, FunctionType.SITE]
@@ -19,5 +20,6 @@ export const FunctionStatuses = [
 	FunctionStatus.PREPARING,
 	FunctionStatus.DEPLOYING,
 	FunctionStatus.FAILED,
-	FunctionStatus.DEPLOYED
+	FunctionStatus.DEPLOYED,
+	FunctionStatus.STOPPED
 ]

@@ -44,8 +44,8 @@ export async function listFunctions(
 			break
 	}
 
-	return await Functions.aggregate([
-		{ $match: { userId, $or: typeLookup } },
+	const functions = await Functions.aggregate([
+		{ $match: { userId: { $regex: userId, $options: 'i' }, $or: typeLookup } },
 		{
 			$lookup: {
 				from: 'functionrequests',
@@ -101,6 +101,7 @@ export async function listFunctions(
 		{
 			$project: {
 				_id: 1,
+				userId: 1,
 				functionId: 1,
 				functionName: 1,
 				type: 1,
@@ -147,6 +148,8 @@ export async function listFunctions(
 			}
 		}
 	])
+
+	return (functions && functions.length) > 0 ? functions[0] : []
 }
 
 /**
@@ -164,7 +167,7 @@ export async function getFunction(
 ): Promise<IFunctionModel> {
 	const fn = await Functions.findOne({
 		_id: data._id,
-		userId,
+		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
@@ -189,7 +192,10 @@ export async function createFunction(
 	const functionName = validateFunctionName(data.functionName)
 
 	// Match existing function name
-	const matchExistingName = await Functions.count({ functionName, userId })
+	const matchExistingName = await Functions.count({
+		functionName,
+		userId: { $regex: userId, $options: 'i' }
+	})
 	if (matchExistingName > 0) throw new BaseErrors.ERR_FUNCTION_NAME_EXISTS()
 
 	// Generate a subdomain for the function
@@ -231,7 +237,7 @@ export async function updateFunction(
 		const matchExistingName = await Functions.count({
 			_id: { $ne: data._id },
 			functionName,
-			userId
+			userId: { $regex: userId, $options: 'i' }
 		})
 		if (matchExistingName > 0) throw new BaseErrors.ERR_FUNCTION_NAME_EXISTS()
 
@@ -254,7 +260,7 @@ export async function updateFunction(
 	const fn = await Functions.findOneAndUpdate(
 		{
 			_id: data._id,
-			userId,
+			userId: { $regex: userId, $options: 'i' },
 			$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 		},
 		updateObj,
@@ -280,7 +286,7 @@ export async function deleteFunction(
 ): Promise<IFunctionModel> {
 	const fn = await Functions.findOneAndDelete({
 		_id: data._id,
-		userId,
+		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_DELETE_FAILED()
@@ -311,7 +317,7 @@ export async function deployFunction(
 	const fn = await Functions.findOneAndUpdate(
 		{
 			_id: data._id,
-			userId,
+			userId: { $regex: userId, $options: 'i' },
 			$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 		},
 		{ status: 'deployed' },
