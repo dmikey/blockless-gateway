@@ -3,12 +3,13 @@ import {
 	decodeSignature as decodeKeplrSignature,
 	isSecp256k1Pubkey
 } from '@cosmjs/amino'
-import { verifyADR36Amino } from '@keplr-wallet/cosmos'
-import nacl from 'tweetnacl'
-import crypto from 'crypto'
 import { bufferToHex } from '@ethereumjs/util'
+import { verifyADR36Amino } from '@keplr-wallet/cosmos'
 import { recoverPersonalSignature } from '@metamask/eth-sig-util'
+import crypto from 'crypto'
+import nacl from 'tweetnacl'
 
+import { BaseErrors } from '../errors'
 import {
 	default as User,
 	UserWallet,
@@ -17,7 +18,6 @@ import {
 	UserWalletTypeKey,
 	UserWalletTypeKeys
 } from '../models/user'
-import { BaseErrors } from '../errors'
 
 /**
  * Get a user wallet object from a request body containing a wallet address

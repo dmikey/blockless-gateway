@@ -1,4 +1,5 @@
 import { FastifyRequest } from 'fastify'
+
 import { UserWalletRequest, UserWalletType } from './user'
 
 // Schemas

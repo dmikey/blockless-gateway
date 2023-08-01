@@ -1,11 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { REGEX_HOST_MATCH } from '../constants'
-import {
-	AuthChallengePostRequest,
-	AuthSignPostRequest,
-	AuthSignPostSchema,
-	AuthChallengePostSchema
-} from '../schema/auth'
+
 import {
 	generateUserChallenge,
 	getUserWallet,
@@ -13,6 +7,14 @@ import {
 	verifyUserWalletSignature
 } from '@blocklessnetwork/gateway-core'
 import { BaseErrors } from '@blocklessnetwork/gateway-core'
+
+import { REGEX_HOST_MATCH } from '../constants'
+import {
+	AuthChallengePostRequest,
+	AuthChallengePostSchema,
+	AuthSignPostRequest,
+	AuthSignPostSchema
+} from '../schema/auth'
 
 /**
  * API Route to login

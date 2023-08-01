@@ -16,7 +16,4 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Prettier Check
-        uses: actionsx/prettier@v2
-        with:
-          # prettier CLI arguments.
-          args: --check .
+        run: npm run format

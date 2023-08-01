@@ -1,19 +1,17 @@
-import 'dotenv/config'
-import mongoose from 'mongoose'
-import fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
+import 'dotenv/config'
+import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
+import mongoose from 'mongoose'
 
+import { API_PATH } from './constants'
+import { authenticateHook } from './hooks/authenticate'
 import { register as registerAuth } from './routes/auth'
 import { register as registerFunctions } from './routes/functions'
 import { register as registerInvoke } from './routes/invoke'
 import { register as registerRegistry } from './routes/registry'
-
-import { authenticateHook } from './hooks/authenticate'
-
-import { API_PATH } from './constants'
 import { EnvSchema } from './schema/env'
 
 // Create the server

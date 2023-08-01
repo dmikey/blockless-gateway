@@ -1,10 +1,12 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify'
 import { File } from 'web3.storage'
+
 import { fetchFunctionManifest, storeFunctionManifest } from '@blocklessnetwork/gateway-core'
-import { storageClient } from '../utils/storageClient'
-import { REGEX_HOST_MATCH } from '../constants'
 import { BaseErrors } from '@blocklessnetwork/gateway-core'
 import { IFunctionManifestRecord } from '@blocklessnetwork/gateway-core'
+
+import { REGEX_HOST_MATCH } from '../constants'
+import { storageClient } from '../utils/storageClient'
 
 export const register = (server: FastifyInstance, opts: FastifyPluginOptions, next) => {
 	server.get(

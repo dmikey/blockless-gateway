@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+
 import { IDocument } from '../interfaces/generic'
 
 export enum FunctionType {

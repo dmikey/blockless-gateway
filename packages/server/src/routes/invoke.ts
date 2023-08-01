@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
-import { lookupAndInvokeFunction, IFunctionRequestData } from '@blocklessnetwork/gateway-core'
+
+import { IFunctionRequestData, lookupAndInvokeFunction } from '@blocklessnetwork/gateway-core'
+
 import { REGEX_HOST_MATCH, REGEX_HOST_NOT_MATCH } from '../constants'
 
 /**

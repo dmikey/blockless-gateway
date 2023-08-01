@@ -3,5 +3,9 @@
 	"singleQuote": true,
 	"trailingComma": "none",
 	"semi": false,
-	"printWidth": 100
+	"printWidth": 100,
+	"importOrder": ["^@blocklessnetwork/(.*)$", "^[./]"],
+	"importOrderSeparation": true,
+	"importOrderSortSpecifiers": true,
+	"plugins": ["@trivago/prettier-plugin-sort-imports"]
 }

@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+
 import {
 	createFunction,
 	deleteFunction,
@@ -7,22 +8,23 @@ import {
 	listFunctions,
 	updateFunction
 } from '@blocklessnetwork/gateway-core'
+
+import { REGEX_HOST_MATCH } from '../constants'
 import {
 	FunctionCreateRequest,
 	FunctionCreateSchema,
-	FunctionListRequest,
-	FunctionUpdateRequest,
-	FunctionFetchRequest,
 	FunctionDeleteRequest,
-	FunctionDeployRequest,
-	FunctionUpdateEnvVarsRequest,
-	FunctionGetSchema,
-	FunctionUpdateSchema,
-	FunctionUpdateEnvVarsSchema,
 	FunctionDeleteSchema,
-	FunctionDeploySchema
+	FunctionDeployRequest,
+	FunctionDeploySchema,
+	FunctionFetchRequest,
+	FunctionGetSchema,
+	FunctionListRequest,
+	FunctionUpdateEnvVarsRequest,
+	FunctionUpdateEnvVarsSchema,
+	FunctionUpdateRequest,
+	FunctionUpdateSchema
 } from '../schema/function'
-import { REGEX_HOST_MATCH } from '../constants'
 
 export const register = (server: FastifyInstance, opts, next) => {
 	const type = opts.type || 'function'
