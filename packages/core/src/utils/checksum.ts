@@ -17,6 +17,7 @@ export function generateCRC32Checksum(str: string): number {
 
 /**
  * Utility function to generate a CRC table
+ *
  * @returns
  */
 function makeCRCTable(): number[] {

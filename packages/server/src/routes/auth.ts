@@ -1,12 +1,12 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import {
+	BaseErrors,
 	generateUserChallenge,
 	getUserWallet,
 	getUserWalletByType,
 	verifyUserWalletSignature
 } from '@blocklessnetwork/gateway-core'
-import { BaseErrors } from '@blocklessnetwork/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import {

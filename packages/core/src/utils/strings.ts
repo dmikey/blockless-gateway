@@ -1,3 +1,9 @@
+/**
+ * Normalize string
+ *
+ * @param v
+ * @returns
+ */
 export const normalize = (v: string) => {
 	let formatted = v
 

@@ -1,6 +1,5 @@
 import axios from 'axios'
 import crypto from 'crypto'
-import { FastifyRequest } from 'fastify'
 
 import { BaseErrors } from '../errors'
 import { INameValueArray } from '../interfaces/generic'
