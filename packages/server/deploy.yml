@@ -1,0 +1,49 @@
+---
+version: '2.0'
+services:
+  gateway:
+    image: 'ghcr.io/blocklessnetwork/gateway-server:latest'
+    env:
+      - SERVER_DOMAIN=
+      - SERVER_HOST=
+      - SERVER_PORT=
+      - MONGO_DB_URI=
+      - HEAD_NODE_HOST=
+      - ENV_ENCRYPTION_SECRET=
+      - CLOUDFLARE_API_TOKEN=
+    expose:
+      - port: 80
+        as: 80
+        to:
+          - global: true
+            ip: gateway-endpoint
+      - port: 443
+        as: 443
+        to:
+          - global: true
+            ip: gateway-endpoint
+profiles:
+  compute:
+    gateway:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 512Mi
+        storage:
+          - size: 512Mi
+  placement:
+    dcloud:
+      pricing:
+        gateway:
+          denom: uakt
+          amount: 1000
+deployment:
+  gateway:
+    dcloud:
+      profile: gateway
+      count: 1
+
+endpoints:
+  gateway-endpoint:
+    kind: ip

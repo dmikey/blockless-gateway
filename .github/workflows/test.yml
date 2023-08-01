@@ -15,8 +15,8 @@ jobs:
           # Make sure the actual branch is checked out when running on pull requests
           ref: ${{ github.head_ref }}
 
-      - name: Prettier Check
-        uses: actionsx/prettier@v2
-        with:
-          # prettier CLI arguments.
-          args: --check .
+      - name: Install dependencies
+        run: npm i
+
+      - name: Prettier
+        run: npm run format
