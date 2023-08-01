@@ -13,7 +13,7 @@ import {
 import { Functions, IFunctionModel } from '../models/function'
 import { FunctionManifest } from '../models/functionManifest'
 import { generateCRC32Checksum } from '../utils/checksum'
-import { decryptValue } from '../utils/encryption'
+import { decryptValue, encryptValue } from '../utils/encryption'
 import { normalize } from '../utils/strings'
 import { get24HoursInterval } from '../utils/time'
 import { installHeadNodeFunction } from './headNode'
@@ -272,6 +272,70 @@ export async function updateFunction(
 }
 
 /**
+ * Update function envVar data
+ *
+ * @param type
+ * @param userId
+ * @param data
+ * @param encryptionKey
+ * @returns
+ */
+export async function updateFunctionEnvVars(
+	type: 'function' | 'site',
+	userId: string,
+	data: Partial<IFunctionRecord>,
+	encryptionKey?: string
+) {
+	const envVars = data.envVars
+	if (!envVars) throw new BaseErrors.ERR_FUNCTION_ENVVARS_NOT_FOUND()
+
+	const fn = await Functions.findOne({
+		_id: data._id,
+		userId: { $regex: userId, $options: 'i' },
+		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
+	})
+	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
+
+	// Format EnvVars
+	if (envVars && typeof envVars === 'object' && Object.keys(envVars).length >= 1) {
+		for (const key of Object.keys(envVars)) {
+			const foundIndex = fn.envVars.findIndex((e) => e.name === key)
+
+			if (envVars[key] === null) {
+				if (foundIndex !== -1) {
+					fn.envVars.splice(foundIndex, 1)
+				}
+			} else if (!!envVars[key]) {
+				if (encryptionKey) {
+					const { value, iv } = encryptValue(envVars[key], encryptionKey)
+
+					if (foundIndex !== -1) {
+						fn.envVars[foundIndex].name = key
+						fn.envVars[foundIndex].value = value
+						fn.envVars[foundIndex].iv = iv
+					} else {
+						fn.envVars.push({ name: key, value, iv })
+					}
+				} else {
+					if (foundIndex !== -1) {
+						fn.envVars[foundIndex].name = key
+						fn.envVars[foundIndex].value = envVars[key]
+					} else {
+						fn.envVars.push({ name: key, value: envVars[key] })
+					}
+				}
+			}
+		}
+	}
+
+	// Perform the update
+	const updatedFn = await fn.save()
+	if (!updatedFn) throw new BaseErrors.ERR_FUNCTION_UPDATE_FAILED()
+
+	return fn
+}
+
+/**
  * Delete a function by its id
  *
  * @param type
@@ -305,10 +369,11 @@ export async function deleteFunction(
 export async function deployFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string; cid: string }
+	data: { _id: string; cid: string },
+	options?: { headNodeHost?: string }
 ): Promise<IFunctionModel> {
 	// Request a deployment for the function
-	await installHeadNodeFunction(data.cid)
+	await installHeadNodeFunction(data.cid, 1, options?.headNodeHost)
 
 	// Cache Manifest
 	await fetchFunctionManifest(data.cid)
@@ -386,14 +451,17 @@ export async function storeFunctionManifest(functionId: string, manifest: IFunct
  */
 export function parseFunctionEnvVars(
 	envVars: IFunctionEnvVarRecord[],
-	encryptionKey: string
+	encryptionKey?: string
 ): INameValueArray {
 	let envVarsArray = [] as INameValueArray
 
 	envVarsArray = envVars
 		.filter((envVar) => !!envVar.value && !!envVar.iv)
 		.map((envVar) => {
-			const value = decryptValue(envVar.value, encryptionKey, envVar.iv)
+			const value =
+				!!encryptionKey && envVar.iv
+					? decryptValue(envVar.value, encryptionKey, envVar.iv)
+					: envVar.value
 			return { name: envVar.name, value }
 		})
 

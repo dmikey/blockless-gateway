@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import { HEAD_NODE_HOST } from '../constants'
 import { BaseErrors } from '../errors'
 import { INameValueArray } from '../interfaces/generic'
 import { IHeadNodePayload, IHeadNodeResponse } from '../interfaces/headNode'
@@ -15,16 +16,14 @@ import { fetchCache, storeCache } from './headNodeCache'
  */
 export async function callHeadNodeFunction(
 	payload: IHeadNodePayload,
-	retries: number = 0
+	retries: number = 0,
+	headNodeHost: string = HEAD_NODE_HOST
 ): Promise<IHeadNodeResponse> {
 	let i = 0
 
 	while (i < retries) {
 		try {
-			const response = await axios.post(
-				`${process.env.HEAD_NODE_HOST}/api/v1/functions/execute`,
-				payload
-			)
+			const response = await axios.post(`${headNodeHost}/api/v1/functions/execute`, payload)
 
 			if (response.data.code === '200' || response.data.code === 200) {
 				return response.data
@@ -46,14 +45,12 @@ export async function callHeadNodeFunction(
  */
 export async function installHeadNodeFunction(
 	functionId: string,
-	count: number = 1
+	count: number = 1,
+	headNodeHost: string = HEAD_NODE_HOST
 ): Promise<IHeadNodeResponse> {
-	const response = await axios.post(
-		`${process.env.HEAD_NODE_HOST}/api/v1/functions/install?count=${count}`,
-		{
-			cid: functionId
-		}
-	)
+	const response = await axios.post(`${headNodeHost}/api/v1/functions/install?count=${count}`, {
+		cid: functionId
+	})
 
 	if (!(response.data.code === '200' || response.data.code === 200)) {
 		throw new BaseErrors.ERR_HEAD_FAILED_TO_INSTALL()
@@ -69,13 +66,13 @@ export async function installHeadNodeFunction(
  * @returns
  */
 export async function fetchCachedHeadNodeFunction(
-	payload: IHeadNodePayload
+	payload: IHeadNodePayload,
+	cb: () => Promise<IHeadNodeResponse>
 ): Promise<IHeadNodeResponse> {
 	const cachedData = await fetchCache(payload)
 	if (cachedData) return cachedData
 
-	const data = await callHeadNodeFunction(payload, 3)
-	return storeCache(payload, data)
+	return storeCache(payload, await cb())
 }
 
 /**
@@ -88,10 +85,13 @@ export async function fetchCachedHeadNodeFunction(
 export async function invokeCachedHeadNodeFunction(
 	functionId: string,
 	manifest: IFunctionManifestRecord,
-	envVars: INameValueArray
+	envVars: INameValueArray,
+	headNodeHost?: string
 ): Promise<IHeadNodeResponse> {
 	const payload = parsePayload(functionId, manifest, envVars)
-	return await fetchCachedHeadNodeFunction(payload)
+	return await fetchCachedHeadNodeFunction(payload, () =>
+		callHeadNodeFunction(payload, 3, headNodeHost)
+	)
 }
 
 /**
@@ -104,10 +104,11 @@ export async function invokeCachedHeadNodeFunction(
 export async function invokeHeadNodeFunction(
 	functionId: string,
 	manifest: IFunctionManifestRecord,
-	envVars: INameValueArray
+	envVars: INameValueArray,
+	headNodeHost?: string
 ): Promise<IHeadNodeResponse> {
 	const payload = parsePayload(functionId, manifest, envVars)
-	return await callHeadNodeFunction(payload, 3)
+	return await callHeadNodeFunction(payload, 3, headNodeHost)
 }
 
 /**

@@ -10,6 +10,12 @@ interface IEnvSchema {
 	ENV_ENCRYPTION_SECRET: string
 }
 
+declare module 'fastify' {
+	interface FastifyInstance {
+		config: IEnvSchema
+	}
+}
+
 export const EnvSchema: JSONSchemaType<IEnvSchema> = {
 	type: 'object',
 	required: ['HEAD_NODE_HOST', 'MONGO_DB_URI', 'JWT_SECRET', 'ENV_ENCRYPTION_SECRET'],

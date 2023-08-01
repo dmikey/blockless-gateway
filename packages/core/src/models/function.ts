@@ -47,7 +47,7 @@ export interface IFunctionManifestRecord {
 export interface IFunctionEnvVarRecord {
 	name: string
 	value: string
-	iv: string
+	iv?: string
 }
 
 export interface IFunctionRecord extends IDocument {

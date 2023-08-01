@@ -18,14 +18,13 @@ export async function lookupAndInvokeFunction(
 	type: 'subdomain' | 'domain' | 'invocationId',
 	value: string,
 	requestData: IFunctionRequestData,
-	encryptionKey: string
+	options?: { encryptionKey?: string; headNodeHost?: string }
 ) {
 	let filter: object | null = null
 
 	switch (type) {
 		case 'subdomain':
-			const subdomainValue = value.replace(`.${process.env.SERVER_DOMAIN!}`, '')
-			filter = { $or: [{ subdomain: subdomainValue }, { 'domainMappings.domain': value }] }
+			filter = { $or: [{ subdomain: value.split('.')[0] }, { 'domainMappings.domain': value }] }
 			break
 		case 'domain':
 			filter = { 'domainMappings.domain': value }
@@ -67,7 +66,7 @@ export async function lookupAndInvokeFunction(
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
 	if (!fn.functionId) throw new BaseErrors.ERR_FUNCTION_NOT_DEPLOYED()
 
-	return invoke(fn, requestData, encryptionKey)
+	return invoke(fn, requestData, options)
 }
 
 /**
@@ -78,7 +77,7 @@ export async function lookupAndInvokeFunction(
 async function invoke(
 	fn: IFunctionRecord,
 	requestData: IFunctionRequestData,
-	encryptionKey: string
+	options?: { encryptionKey?: string; headNodeHost?: string }
 ) {
 	// Fetch function's manifest file
 	let manifest = fn.manifest
@@ -91,13 +90,18 @@ async function invoke(
 	}
 
 	// Prepare request data and environment variables
-	const envVars = parseFunctionEnvVars(fn.envVars, encryptionKey)
+	const envVars = parseFunctionEnvVars(fn.envVars, options?.encryptionKey)
 	const requestVars = parseFunctionRequestVars(requestData)
 	const callFn =
 		fn.type === FunctionType.SITE ? invokeCachedHeadNodeFunction : invokeHeadNodeFunction
 
 	// Call the cached or uncached function on the head node
-	const data = await callFn(fn.functionId, manifest, [...envVars, ...requestVars])
+	const data = await callFn(
+		fn.functionId,
+		manifest,
+		[...envVars, ...requestVars],
+		options?.headNodeHost
+	)
 
 	// Parse head node response
 	return parseFunctionResponse(data)

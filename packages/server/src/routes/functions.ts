@@ -6,7 +6,8 @@ import {
 	deployFunction,
 	getFunction,
 	listFunctions,
-	updateFunction
+	updateFunction,
+	updateFunctionEnvVars
 } from '@blocklessnetwork/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
@@ -99,7 +100,12 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { envVars } = request.body
 
-			return await updateFunction(type, publicAddress, { _id: id, envVars })
+			return await updateFunctionEnvVars(
+				type,
+				publicAddress,
+				{ _id: id, envVars },
+				process.env.ENV_ENCRYPTION_SECRET!
+			)
 		}
 	)
 
@@ -128,7 +134,12 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { functionId } = request.body
 
-			return await deployFunction(type, publicAddress, { _id: id, cid: functionId })
+			return await deployFunction(
+				type,
+				publicAddress,
+				{ _id: id, cid: functionId },
+				{ headNodeHost: process.env.HEAD_NODE_HOST! }
+			)
 		}
 	)
 
