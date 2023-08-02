@@ -1,12 +1,15 @@
 {
 	"name": "@blocklessnetwork/gateway-core",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
 		"/dist"
 	],
 	"license": "Apache-2.0",
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
 	"scripts": {
 		"build": "rimraf dist && tsc",
 		"dev": "nodemon src/index.ts",
