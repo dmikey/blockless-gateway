@@ -2,9 +2,11 @@ import fastifyEnv from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
 import 'dotenv/config'
-import fastify from 'fastify'
+import fastify, { FastifyReply } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 import mongoose from 'mongoose'
+
+import gatewayUI from '@blocklessnetwork/gateway-ui'
 
 import { API_PATH } from './constants'
 import { authenticateHook } from './hooks/authenticate'
@@ -20,7 +22,7 @@ const server = fastify({
 })
 
 // Default route
-server.get('/', async () => {
+server.get('/', async (request, reply: FastifyReply) => {
 	return 'Blockless Gateway'
 })
 
@@ -38,6 +40,9 @@ server.get('/health', async () => {
 server.register(fastifyEnv, { schema: EnvSchema })
 server.register(fastifyJwt, { secret: process.env.JWT_SECRET! })
 server.register(fastifyMultipart)
+
+// UI
+server.register(gatewayUI)
 
 // Hooks
 server.register(fastifyPlugin(authenticateHook))
