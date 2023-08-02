@@ -11,7 +11,8 @@
 		"build:core": "yarn workspace @blocklessnetwork/gateway-core build",
 		"build:server": "yarn workspace @blocklessnetwork/gateway-server build",
 		"format": "prettier --check .",
-		"format:fix": "prettier --write ."
+		"format:fix": "prettier --write .",
+		"test": "yarn workspace @blocklessnetwork/gateway-core test"
 	},
 	"devDependencies": {
 		"@trivago/prettier-plugin-sort-imports": "^4.2.0",

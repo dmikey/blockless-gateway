@@ -13,7 +13,7 @@
 	"scripts": {
 		"build": "rimraf dist && tsc",
 		"dev": "nodemon src/index.ts",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "jest --preset ts-jest --testEnvironment node --coverage"
 	},
 	"dependencies": {
 		"@cosmjs/amino": "^0.31.0",
