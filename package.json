@@ -7,6 +7,7 @@
 		"packages/*"
 	],
 	"scripts": {
+		"prepare": "husky install",
 		"build:core": "yarn workspace @blocklessnetwork/gateway-core build",
 		"build:server": "yarn workspace @blocklessnetwork/gateway-server build",
 		"format": "prettier --check .",
@@ -14,6 +15,7 @@
 	},
 	"devDependencies": {
 		"@trivago/prettier-plugin-sort-imports": "^4.2.0",
+		"husky": "^8.0.3",
 		"prettier": "^3.0.0"
 	}
 }
