@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import Base from '../components/Base'
+import Base from './Base'
 
 function App() {
 	return <div>Not Found</div>

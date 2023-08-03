@@ -5,7 +5,12 @@ import { Blockless, Box, Flex, Image, Link, Text } from '@blocklessnetwork/ui-co
 
 import { fetchAuthChallenge, fetchAuthToken } from '../../actions/auth'
 
-export default function WalletMetamask() {
+interface WalletMetamaskProps {
+	onLogin: (jwt: string | null) => void
+	onLoading: () => void
+}
+
+export default function WalletMetamask({ onLogin, onLoading }: WalletMetamaskProps) {
 	const [isAvailable, setIsAvailable] = useState(false)
 
 	// Check availability for Metamask
@@ -20,6 +25,7 @@ export default function WalletMetamask() {
 
 	// Handle login
 	const handleLogin = async () => {
+		onLoading()
 		const provider = new ethers.BrowserProvider((window as any).ethereum)
 
 		try {
@@ -29,9 +35,10 @@ export default function WalletMetamask() {
 			const signature = await signer.signMessage(`unique nonce ${nonce}`)
 			const jwt = await fetchAuthToken(account, signature)
 
-			console.log('accounts', account, nonce, signature, jwt)
+			onLogin(jwt)
 		} catch (error) {
 			console.error('Error connecting to Metamask:', error)
+			onLogin(null)
 		}
 	}
 

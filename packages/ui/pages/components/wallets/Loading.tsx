@@ -4,7 +4,7 @@ import { Text, VStack } from '@blocklessnetwork/ui-components'
 
 interface LoadingProps {
 	walletType: 'metamask' | 'keplr' | 'martianWallet'
-	reloading: boolean // state when already have the wallet connected, but need to authorize with the api
+	reloading: boolean
 	redirecting: boolean
 }
 
@@ -26,7 +26,7 @@ export default function WalletLoading({ walletType, reloading, redirecting }: Lo
 						scale: [1, 1.2, 1]
 					}}
 					transition={{ repeat: Infinity }}
-					src={`${walletType}.svg`}
+					src={`./${walletType}.svg`}
 					alt={walletType}
 				/>
 				<Text color="primary.gray.1" fontSize="16px" fontWeight={400}>
