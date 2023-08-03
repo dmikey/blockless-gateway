@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Stage 1: Copy the package.json and lock files to the container
 COPY package.json ./
-COPY yarn.lock ./
 
 RUN yarn install
 

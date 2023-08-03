@@ -1,5 +1,7 @@
 # Blockless Gateway
 
+[![CI](https://github.com/blocklessnetwork/gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/blocklessnetwork/gateway/actions/workflows/ci.yml)
+
 ## Development
 
 To start the development server, run
