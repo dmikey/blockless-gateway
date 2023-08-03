@@ -6,7 +6,9 @@ import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 import mongoose from 'mongoose'
 
-import { API_PATH } from './constants'
+import gatewayUI from '@blocklessnetwork/gateway-ui'
+
+import { API_PATH, REGEX_HOST_MATCH } from './constants'
 import { authenticateHook } from './hooks/authenticate'
 import { register as registerAuth } from './routes/auth'
 import { register as registerFunctions } from './routes/functions'
@@ -38,6 +40,9 @@ server.get('/health', async () => {
 server.register(fastifyEnv, { schema: EnvSchema })
 server.register(fastifyJwt, { secret: process.env.JWT_SECRET! })
 server.register(fastifyMultipart)
+
+// UI
+server.register(gatewayUI, { hostConstraint: REGEX_HOST_MATCH, pages: ['login'] })
 
 // Hooks
 server.register(fastifyPlugin(authenticateHook))

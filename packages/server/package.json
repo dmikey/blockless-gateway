@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@blocklessnetwork/gateway-core": "*",
+		"@blocklessnetwork/gateway-ui": "*",
 		"@fastify/env": "^4.2.0",
 		"@fastify/jwt": "^7.2.0",
 		"@fastify/multipart": "^7.7.3",
