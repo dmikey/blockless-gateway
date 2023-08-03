@@ -2,7 +2,7 @@ import axios from 'axios'
 import crypto from 'crypto'
 
 import { BaseErrors } from '../errors'
-import { INameValueArray } from '../interfaces/generic'
+import { INameValueArray, KeyValueObject, Pagination } from '../interfaces/generic'
 import { IHeadNodeResponse } from '../interfaces/headNode'
 import {
 	IFunctionEnvVarRecord,
@@ -30,7 +30,7 @@ export async function listFunctions(
 	type: 'function' | 'site',
 	userId: string,
 	data: { page?: number; limit?: number }
-): Promise<IFunctionModel[]> {
+): Promise<Pagination<IFunctionModel>> {
 	const { startTime, endTime } = get24HoursInterval()
 
 	const page = data.page ? data.page : 1
@@ -149,7 +149,20 @@ export async function listFunctions(
 		}
 	])
 
-	return (functions && functions.length) > 0 ? functions[0] : []
+	return (functions && functions.length) > 0
+		? functions[0]
+		: {
+				docs: [],
+				totalDocs: 0,
+				limit,
+				totalPages: 0,
+				page,
+				pagingCounter: 0,
+				hasPrevPage: false,
+				hasNextPage: false,
+				prevPage: null,
+				nextPage: null
+		  }
 }
 
 /**
@@ -283,7 +296,7 @@ export async function updateFunction(
 export async function updateFunctionEnvVars(
 	type: 'function' | 'site',
 	userId: string,
-	data: Partial<IFunctionRecord>,
+	data: { _id: string; envVars: KeyValueObject },
 	encryptionKey?: string
 ) {
 	const envVars = data.envVars
@@ -307,7 +320,7 @@ export async function updateFunctionEnvVars(
 				}
 			} else if (!!envVars[key]) {
 				if (encryptionKey) {
-					const { value, iv } = encryptValue(envVars[key], encryptionKey)
+					const { value, iv } = encryptValue(envVars[key]!, encryptionKey)
 
 					if (foundIndex !== -1) {
 						fn.envVars[foundIndex].name = key
@@ -319,9 +332,9 @@ export async function updateFunctionEnvVars(
 				} else {
 					if (foundIndex !== -1) {
 						fn.envVars[foundIndex].name = key
-						fn.envVars[foundIndex].value = envVars[key]
+						fn.envVars[foundIndex].value = envVars[key]!
 					} else {
-						fn.envVars.push({ name: key, value: envVars[key] })
+						fn.envVars.push({ name: key, value: envVars[key]! })
 					}
 				}
 			}
@@ -329,10 +342,12 @@ export async function updateFunctionEnvVars(
 	}
 
 	// Perform the update
-	const updatedFn = await fn.save()
+	await fn.save()
+
+	const updatedFn = await Functions.findById(fn._id)
 	if (!updatedFn) throw new BaseErrors.ERR_FUNCTION_UPDATE_FAILED()
 
-	return fn
+	return updatedFn
 }
 
 /**
@@ -570,7 +585,7 @@ export function generateSubdomain(functionName: string, userAddress: string) {
  * @param name
  * @returns normalized name after validation
  */
-function validateFunctionName(name: string): string {
+export function validateFunctionName(name: string): string {
 	const functionName = normalize(name)
 	const matchFormat = /^(?!-)[a-z0-9-]{3,32}(?<!-)$/.test(functionName)
 
