@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 export type UserWalletType = 'eth' | 'metamask' | 'keplr' | 'martian'
 export type UserWalletTypeKey = 'ethAddress' | 'cosmosAddress' | 'aptosAddress'
-export type UserWalletRequest = { [key in UserWalletTypeKey]: string }
+export type UserWalletRequest = { [key in UserWalletTypeKey]?: string }
 
 export interface UserWallet {
 	walletKey: UserWalletTypeKey

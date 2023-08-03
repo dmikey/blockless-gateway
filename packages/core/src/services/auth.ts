@@ -27,7 +27,7 @@ import {
  * @param userWalletRequest
  * @returns
  */
-export async function getUserWallet(userWalletRequest: UserWalletRequest): Promise<UserWallet> {
+export function getUserWallet(userWalletRequest: UserWalletRequest): UserWallet {
 	let key: UserWalletTypeKey | null = null
 	let type: UserWalletType | null = null
 	let address: string | null = null
@@ -58,10 +58,9 @@ export async function getUserWallet(userWalletRequest: UserWalletRequest): Promi
  * @param address
  * @returns
  */
-export async function getUserWalletByType(
-	type: UserWalletType,
-	address: string
-): Promise<UserWallet> {
+export function getUserWalletByType(type: UserWalletType, address: string): UserWallet {
+	if (!UserWalletTypeKeys[type]) throw new BaseErrors.ERR_USER_WALLET_NOT_FOUND()
+
 	return { walletKey: UserWalletTypeKeys[type], walletType: type, walletAddress: address }
 }
 

@@ -37,7 +37,7 @@ async function authLoginAPI(_, reply: FastifyReply) {
  * @returns
  */
 async function authChallengeAPI(request: AuthChallengePostRequest) {
-	const userWallet = await getUserWallet(request.body)
+	const userWallet = getUserWallet(request.body)
 	const nonce = await generateUserChallenge(userWallet)
 
 	return { nonce }
@@ -52,7 +52,7 @@ async function authChallengeAPI(request: AuthChallengePostRequest) {
  */
 async function authSignAPI(request: AuthSignPostRequest) {
 	const { walletType, signature, publicAddress, publicKey } = request.body
-	const userWallet = await getUserWalletByType(walletType, publicAddress)
+	const userWallet = getUserWalletByType(walletType, publicAddress)
 
 	// Signature check
 	const isSignatureValid = await verifyUserWalletSignature({
