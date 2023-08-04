@@ -2,33 +2,34 @@ import { personalSign } from '@metamask/eth-sig-util'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 
+import Gateway from '../src'
 import { BaseErrors } from '../src/errors'
+import { getUserWallet, getUserWalletByType } from '../src/helpers/auth'
 import { UserWalletType } from '../src/models/user'
-import {
-	generateUserChallenge,
-	getUser,
-	getUserWallet,
-	getUserWalletByType,
-	verifyUserWalletSignature
-} from '../src/services/auth'
 
 // Constants
 let ETH_USER_ADDRESS = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
 let ETH_USER_PK = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
 
 // Test Database
+let blsGateway: Gateway
 let mongoServer: MongoMemoryServer
 
 beforeAll(async () => {
 	mongoServer = await MongoMemoryServer.create({ binary: { version: '6.0.8' } })
-	await mongoose.connect(mongoServer.getUri(), { dbName: 'test' })
+	blsGateway = new Gateway({
+		mongoUri: mongoServer.getUri('test'),
+		headNodeUri: 'https://head.bls.dev'
+	})
 }, 10000)
 
 describe('User Challenge & Signature', () => {
 	let nonce = ''
 
 	it('should generate a user challenge for a given user wallet', async () => {
-		const userChallenge = await generateUserChallenge(getUserWalletByType('eth', ETH_USER_ADDRESS))
+		const userChallenge = await blsGateway.auth.getChallenge(
+			getUserWalletByType('eth', ETH_USER_ADDRESS)
+		)
 		expect(typeof userChallenge).toBe('string')
 		expect(userChallenge.length).toBeGreaterThan(0)
 		nonce = userChallenge
@@ -40,7 +41,7 @@ describe('User Challenge & Signature', () => {
 			data: `unique nonce ${nonce}`
 		})
 
-		const isValid = await verifyUserWalletSignature({
+		const isValid = await blsGateway.auth.verifySignature({
 			userWallet: getUserWalletByType('eth', ETH_USER_ADDRESS),
 			signature
 		})
@@ -49,7 +50,7 @@ describe('User Challenge & Signature', () => {
 	})
 
 	it('should get user object', async () => {
-		const user = await getUser(getUserWalletByType('eth', ETH_USER_ADDRESS))
+		const user = await blsGateway.auth.getUser(getUserWalletByType('eth', ETH_USER_ADDRESS))
 		expect(user.ethAddress).toBe(ETH_USER_ADDRESS)
 	})
 })

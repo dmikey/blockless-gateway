@@ -4,7 +4,6 @@ import fastifyMultipart from '@fastify/multipart'
 import 'dotenv/config'
 import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
-import mongoose from 'mongoose'
 
 import gatewayUI from '@blocklessnetwork/gateway-ui'
 
@@ -60,14 +59,5 @@ server.listen(
 	(err, address) => {
 		if (err) throw err
 		server.log.info('Server started: ', address)
-
-		// Connect database
-		mongoose
-			.connect(process.env.MONGO_DB_URI as string)
-			.then(() => server.log.info('Database connected'))
-			.catch(() => {
-				server.log.info('Database connection failed')
-				return server.close()
-			})
 	}
 )

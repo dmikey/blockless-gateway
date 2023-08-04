@@ -2,6 +2,7 @@ import { createErrorClasses } from './base'
 
 // Define the error codes configuration
 const errorCodesConfig = {
+	ERR_INVALID_DB_CONNECTION: { statusCode: 401, message: 'Invalid database connection.' },
 	ERR_FUNCTION_NOT_FOUND: { statusCode: 404, message: 'Function not found.' },
 	ERR_FUNCTION_NOT_DEPLOYED: { statusCode: 404, message: 'Function not deployed.' },
 	ERR_FUNCTION_MANIFEST_NOT_FOUND: { statusCode: 404, message: 'Function manifest not found.' },

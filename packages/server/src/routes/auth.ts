@@ -1,12 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import {
-	BaseErrors,
-	generateUserChallenge,
-	getUserWallet,
-	getUserWalletByType,
-	verifyUserWalletSignature
-} from '@blocklessnetwork/gateway-core'
+import { BaseErrors, getUserWallet, getUserWalletByType } from '@blocklessnetwork/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import {
@@ -15,6 +9,7 @@ import {
 	AuthSignPostRequest,
 	AuthSignPostSchema
 } from '../schema/auth'
+import gatewayClient from '../utils/gatewayClient'
 
 /**
  * API Route to login
@@ -38,7 +33,7 @@ async function authLoginAPI(_, reply: FastifyReply) {
  */
 async function authChallengeAPI(request: AuthChallengePostRequest) {
 	const userWallet = getUserWallet(request.body)
-	const nonce = await generateUserChallenge(userWallet)
+	const nonce = await gatewayClient.auth.getChallenge(userWallet)
 
 	return { nonce }
 }
@@ -55,7 +50,7 @@ async function authSignAPI(request: AuthSignPostRequest) {
 	const userWallet = getUserWalletByType(walletType, publicAddress)
 
 	// Signature check
-	const isSignatureValid = await verifyUserWalletSignature({
+	const isSignatureValid = await gatewayClient.auth.verifySignature({
 		userWallet,
 		signature,
 		publicKey

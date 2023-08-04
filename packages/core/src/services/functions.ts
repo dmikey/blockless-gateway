@@ -1,21 +1,13 @@
-import axios from 'axios'
 import crypto from 'crypto'
 
 import { BaseErrors } from '../errors'
-import { INameValueArray, KeyValueObject, Pagination } from '../interfaces/generic'
-import { IHeadNodeResponse } from '../interfaces/headNode'
-import {
-	IFunctionEnvVarRecord,
-	IFunctionManifestRecord,
-	IFunctionRecord,
-	IFunctionRequestData
-} from '../models/function'
-import { Functions, IFunctionModel } from '../models/function'
-import { FunctionManifest } from '../models/functionManifest'
-import { generateCRC32Checksum } from '../utils/checksum'
-import { decryptValue, encryptValue } from '../utils/encryption'
-import { normalize } from '../utils/strings'
+import { generateSubdomain, validateFunctionName } from '../helpers/functions'
+import { KeyValueObject, Pagination } from '../interfaces/generic'
+import { IFunctionRecord } from '../models/function'
+import Functions, { IFunctionModel } from '../models/function'
+import { encryptValue } from '../utils/encryption'
 import { get24HoursInterval } from '../utils/time'
+import { fetchFunctionManifest } from './functionManifests'
 import { installHeadNodeFunction } from './headNode'
 
 /**
@@ -176,10 +168,10 @@ export async function listFunctions(
 export async function getFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string }
+	id: string
 ): Promise<IFunctionModel> {
 	const fn = await Functions.findOne({
-		_id: data._id,
+		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
@@ -238,6 +230,7 @@ export async function createFunction(
 export async function updateFunction(
 	type: 'function' | 'site',
 	userId: string,
+	id: string,
 	data: Partial<IFunctionRecord>
 ): Promise<IFunctionModel> {
 	const updateObj = {} as Partial<IFunctionRecord>
@@ -248,7 +241,7 @@ export async function updateFunction(
 
 		// Match existing function
 		const matchExistingName = await Functions.count({
-			_id: { $ne: data._id },
+			_id: { $ne: id },
 			functionName,
 			userId: { $regex: userId, $options: 'i' }
 		})
@@ -272,7 +265,7 @@ export async function updateFunction(
 	// Perform the update
 	const fn = await Functions.findOneAndUpdate(
 		{
-			_id: data._id,
+			_id: id,
 			userId: { $regex: userId, $options: 'i' },
 			$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 		},
@@ -296,14 +289,15 @@ export async function updateFunction(
 export async function updateFunctionEnvVars(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string; envVars: KeyValueObject },
+	id: string,
+	data: { envVars: KeyValueObject },
 	encryptionKey?: string
 ) {
 	const envVars = data.envVars
 	if (!envVars) throw new BaseErrors.ERR_FUNCTION_ENVVARS_NOT_FOUND()
 
 	const fn = await Functions.findOne({
-		_id: data._id,
+		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
@@ -361,10 +355,10 @@ export async function updateFunctionEnvVars(
 export async function deleteFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string }
+	id: string
 ): Promise<IFunctionModel> {
 	const fn = await Functions.findOneAndDelete({
-		_id: data._id,
+		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
@@ -384,19 +378,20 @@ export async function deleteFunction(
 export async function deployFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string; cid: string },
+	id: string,
+	data: { functionId: string },
 	options?: { headNodeHost?: string }
 ): Promise<IFunctionModel> {
 	// Request a deployment for the function
-	await installHeadNodeFunction(data.cid, 1, options?.headNodeHost)
+	await installHeadNodeFunction(data.functionId, 1, options?.headNodeHost)
 
 	// Cache Manifest
-	await fetchFunctionManifest(data.cid)
+	await fetchFunctionManifest(data.functionId)
 
 	// Update deploy status
 	const fn = await Functions.findOneAndUpdate(
 		{
-			_id: data._id,
+			_id: id,
 			userId: { $regex: userId, $options: 'i' },
 			$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 		},
@@ -406,191 +401,4 @@ export async function deployFunction(
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_DEPLOY_FAILED()
 
 	return fn
-}
-
-/**
- * A utility method to fetch and cache function manifest
- *
- * @param functionId the IPFS CID for this function
- */
-export async function fetchFunctionManifest(functionId: string) {
-	try {
-		let manifest = null
-
-		// Fetch cached manifest record
-		const functionManifest = await FunctionManifest.findOne({ functionId }).lean()
-
-		// If not found or not valid
-		if (!(!!functionManifest && !!functionManifest.manifest)) {
-			const manifestResponse = await axios.get(`https://${functionId}.ipfs.w3s.link/manifest.json`)
-			if (!(!!manifestResponse && !!manifestResponse.data))
-				throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
-			if (!(!!manifestResponse.data.entry && !!manifestResponse.data.contentType))
-				throw new BaseErrors.ERR_FUNCTION_MANIFEST_INVALID()
-
-			// Set manifest to respond
-			manifest = manifestResponse.data
-
-			// Update cache
-			await FunctionManifest.findOneAndUpdate({ functionId }, { manifest }, { upsert: true })
-		} else {
-			manifest = functionManifest.manifest
-		}
-
-		return manifest
-	} catch (error) {
-		return null
-	}
-}
-
-/**
- * A utility method to validate and store a function manifest
- *
- * @param functionId
- * @param manifest
- * @returns
- */
-export async function storeFunctionManifest(functionId: string, manifest: IFunctionManifestRecord) {
-	if (!manifest) throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
-	if (!(!!manifest.entry && !!manifest.contentType))
-		throw new BaseErrors.ERR_FUNCTION_MANIFEST_INVALID()
-
-	return await FunctionManifest.findOneAndUpdate({ functionId }, { manifest }, { upsert: true })
-}
-
-/**
- * A utility function to parse env vars key-value array from a function's env var records
- *
- * @param envVars
- * @returns
- */
-export function parseFunctionEnvVars(
-	envVars: IFunctionEnvVarRecord[],
-	encryptionKey?: string
-): INameValueArray {
-	let envVarsArray = [] as INameValueArray
-
-	envVarsArray = envVars
-		.filter((envVar) => !!envVar.value && !!envVar.iv)
-		.map((envVar) => {
-			const value =
-				!!encryptionKey && envVar.iv
-					? decryptValue(envVar.value, encryptionKey, envVar.iv)
-					: envVar.value
-			return { name: envVar.name, value }
-		})
-
-	return envVarsArray
-}
-
-/**
- * A utility function to parse env vars key-value array from a function's request data
- *
- * @param requestData
- * @returns
- */
-export function parseFunctionRequestVars(requestData: IFunctionRequestData): INameValueArray {
-	let requestVars = [] as INameValueArray
-
-	requestVars.push({
-		name: 'BLS_REQUEST_METHOD',
-		value: requestData.method || 'GET'
-	})
-
-	requestVars.push({
-		name: 'BLS_REQUEST_PATH',
-		value: requestData.path || '/'
-	})
-
-	requestVars.push({
-		name: 'BLS_REQUEST_PARAMS',
-		value: Object.entries(requestData.params || [])
-			.map(([key, value]) => `${key}=${value}`)
-			.join('&')
-	})
-
-	requestVars.push({
-		name: 'BLS_REQUEST_QUERY',
-		value: Object.entries(requestData.query || [])
-			.map(([key, value]) => `${key}=${value}`)
-			.join('&')
-	})
-
-	requestVars.push({
-		name: 'BLS_REQUEST_HEADERS',
-		value: Object.entries(requestData.query || [])
-			.map(([key, value]) => `${key}=${value}`)
-			.join('&')
-	})
-
-	if (requestData.body) {
-		requestVars.push({
-			name: 'BLS_REQUEST_BODY',
-			value:
-				typeof requestData.body !== 'string'
-					? JSON.stringify(requestData.body)
-					: (requestData.body as string)
-		})
-	}
-
-	return requestVars
-}
-
-/**
- * A utility function to parse the raw response from the head node
- *
- * @param data
- * @returns
- */
-export function parseFunctionResponse(data: IHeadNodeResponse) {
-	let body = null as any
-	let type = 'text/html'
-
-	if (data.result.startsWith('data:')) {
-		const bufferData = data.result.split(',')[1]
-		const contentType = data.result.split(',')[0].split(':')[1].split(';')[0]
-		const base64data = Buffer.from(bufferData, 'base64')
-
-		type = contentType
-		body = base64data
-	} else {
-		body = data.result
-	}
-
-	return {
-		status: 200,
-		headers: [],
-		type,
-		body
-	}
-}
-
-/**
- * Generate a predictable user hash for a function
- *
- * @param zone
- * @param functionName
- * @param userAddress
- * @returns generated subdomain url as a string
- */
-export function generateSubdomain(functionName: string, userAddress: string) {
-	const userHash = (generateCRC32Checksum(('bls-' + userAddress) as string) >>> 0).toString(16)
-	return `${functionName}-${userHash}`
-}
-
-/**
- * A utility function to validate function name,
- * and return with the normalized name
- *
- * @param name
- * @returns normalized name after validation
- */
-export function validateFunctionName(name: string): string {
-	const functionName = normalize(name)
-	const matchFormat = /^(?!-)[a-z0-9-]{3,32}(?<!-)$/.test(functionName)
-
-	if (!matchFormat)
-		throw new Error('Names must be between 3 and 32 characters, only contain a-z, 0-9 and -')
-
-	return functionName
 }

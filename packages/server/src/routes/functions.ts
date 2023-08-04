@@ -1,15 +1,5 @@
 import { FastifyInstance } from 'fastify'
 
-import {
-	createFunction,
-	deleteFunction,
-	deployFunction,
-	getFunction,
-	listFunctions,
-	updateFunction,
-	updateFunctionEnvVars
-} from '@blocklessnetwork/gateway-core'
-
 import { REGEX_HOST_MATCH } from '../constants'
 import {
 	FunctionCreateRequest,
@@ -26,6 +16,7 @@ import {
 	FunctionUpdateRequest,
 	FunctionUpdateSchema
 } from '../schema/function'
+import gatewayClient from '../utils/gatewayClient'
 
 export const register = (server: FastifyInstance, opts, next) => {
 	const type = opts.type || 'function'
@@ -40,7 +31,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 		},
 		async (request: FunctionListRequest) => {
 			const { publicAddress } = request.user
-			return listFunctions(type, publicAddress, request.query)
+			return gatewayClient.functions.list(type, publicAddress, request.query)
 		}
 	)
 
@@ -54,7 +45,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { functionName, functionId } = request.body
 
-			return await createFunction(type, publicAddress, {
+			return await gatewayClient.functions.create(type, publicAddress, {
 				functionName,
 				functionId
 			})
@@ -71,7 +62,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { id } = request.params
 			const { publicAddress } = request.user
 
-			return await getFunction(type, publicAddress, { _id: id })
+			return await gatewayClient.functions.get(type, publicAddress, id)
 		}
 	)
 
@@ -85,7 +76,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { id } = request.params
 			const { publicAddress } = request.user
 
-			return await updateFunction(type, publicAddress, { _id: id, ...request.body })
+			return await gatewayClient.functions.update(type, publicAddress, id, { ...request.body })
 		}
 	)
 
@@ -100,10 +91,11 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { envVars } = request.body
 
-			return await updateFunctionEnvVars(
+			return await gatewayClient.functions.updateEnvVars(
 				type,
 				publicAddress,
-				{ _id: id, envVars },
+				id,
+				{ envVars },
 				process.env.ENV_ENCRYPTION_SECRET!
 			)
 		}
@@ -119,7 +111,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { id } = request.params
 			const { publicAddress } = request.user
 
-			return await deleteFunction('function', publicAddress, { _id: id })
+			return await gatewayClient.functions.delete(type, publicAddress, id)
 		}
 	)
 
@@ -134,10 +126,11 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { functionId } = request.body
 
-			return await deployFunction(
+			return await gatewayClient.functions.deploy(
 				type,
 				publicAddress,
-				{ _id: id, cid: functionId },
+				id,
+				{ functionId },
 				{ headNodeHost: process.env.HEAD_NODE_HOST! }
 			)
 		}

@@ -1,10 +1,6 @@
 import { FastifyRequest } from 'fastify'
 
-import {
-	FunctionStatuses,
-	IFunctionEnvVarRecord,
-	IFunctionRecord
-} from '@blocklessnetwork/gateway-core'
+import { FunctionStatuses, IFunctionRecord } from '@blocklessnetwork/gateway-core'
 
 export type FunctionCreateRequest = FastifyRequest<{
 	Body: {
@@ -25,7 +21,9 @@ export type FunctionUpdateEnvVarsRequest = FastifyRequest<{
 		id: string
 	}
 	Body: {
-		envVars: IFunctionEnvVarRecord[]
+		envVars: {
+			[key: string]: string | null
+		}
 	}
 }>
 
