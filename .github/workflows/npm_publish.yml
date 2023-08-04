@@ -1,8 +1,6 @@
 name: Publish to NPM
 
 on:
-  release:
-    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -32,10 +30,18 @@ jobs:
       - name: Build
         run: yarn build:core
 
-      - name: Publish
+      - name: Publish Core
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           npm publish --access public
         working-directory: packages/core
+
+      - name: Publish UI
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          npm publish --access public
+        working-directory: packages/ui
