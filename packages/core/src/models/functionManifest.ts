@@ -10,4 +10,5 @@ const FunctionManifestSchema = new mongoose.Schema(
 	}
 )
 
-export const FunctionManifest = mongoose.model('FunctionManifest', FunctionManifestSchema)
+const FunctionManifest = mongoose.model('FunctionManifest', FunctionManifestSchema)
+export default FunctionManifest

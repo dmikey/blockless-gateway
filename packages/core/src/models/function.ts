@@ -117,4 +117,6 @@ const FunctionSchema = new mongoose.Schema(
 )
 
 export type IFunctionModel = IFunctionRecord & mongoose.Document
-export const Functions = mongoose.model<IFunctionModel>('Function', FunctionSchema)
+
+const Functions = mongoose.model<IFunctionModel>('Function', FunctionSchema)
+export default Functions

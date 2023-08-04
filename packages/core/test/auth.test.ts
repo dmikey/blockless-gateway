@@ -2,6 +2,7 @@ import { personalSign } from '@metamask/eth-sig-util'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 
+import { setConnection } from '../src'
 import { BaseErrors } from '../src/errors'
 import { UserWalletType } from '../src/models/user'
 import {
@@ -21,7 +22,7 @@ let mongoServer: MongoMemoryServer
 
 beforeAll(async () => {
 	mongoServer = await MongoMemoryServer.create({ binary: { version: '6.0.8' } })
-	await mongoose.connect(mongoServer.getUri(), { dbName: 'test' })
+	setConnection(mongoServer.getUri('test'))
 }, 10000)
 
 describe('User Challenge & Signature', () => {

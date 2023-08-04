@@ -10,8 +10,8 @@ import {
 	IFunctionRecord,
 	IFunctionRequestData
 } from '../models/function'
-import { Functions, IFunctionModel } from '../models/function'
-import { FunctionManifest } from '../models/functionManifest'
+import Functions, { IFunctionModel } from '../models/function'
+import FunctionManifest from '../models/functionManifest'
 import { generateCRC32Checksum } from '../utils/checksum'
 import { decryptValue, encryptValue } from '../utils/encryption'
 import { normalize } from '../utils/strings'

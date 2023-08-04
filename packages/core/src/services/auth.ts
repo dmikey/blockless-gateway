@@ -10,8 +10,7 @@ import crypto from 'crypto'
 import nacl from 'tweetnacl'
 
 import { BaseErrors } from '../errors'
-import {
-	default as User,
+import User, {
 	UserWallet,
 	UserWalletRequest,
 	UserWalletType,
