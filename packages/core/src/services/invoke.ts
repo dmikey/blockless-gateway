@@ -1,12 +1,12 @@
 import { BaseErrors } from '../errors'
-import { FunctionType, IFunctionRecord, IFunctionRequestData } from '../models/function'
-import Functions from '../models/function'
 import {
-	fetchFunctionManifest,
 	parseFunctionEnvVars,
 	parseFunctionRequestVars,
 	parseFunctionResponse
-} from './function'
+} from '../helpers/functions'
+import { FunctionType, IFunctionRecord, IFunctionRequestData } from '../models/function'
+import Functions from '../models/function'
+import { fetchFunctionManifest } from './functionManifests'
 import { invokeCachedHeadNodeFunction, invokeHeadNodeFunction } from './headNode'
 
 /**

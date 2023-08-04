@@ -1,21 +1,14 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 
-import { setConnection } from '../src'
-import { BaseErrors } from '../src/errors'
-import Functions from '../src/models/function'
-import {
-	createFunction,
-	deleteFunction,
+import Gateway, {
 	generateSubdomain,
-	getFunction,
-	listFunctions,
 	parseFunctionEnvVars,
 	parseFunctionRequestVars,
-	updateFunction,
-	updateFunctionEnvVars,
 	validateFunctionName
-} from '../src/services/function'
+} from '../src'
+import { BaseErrors } from '../src/errors'
+import Functions from '../src/models/function'
 
 // Constants
 const USER_ADDRESS = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
@@ -30,16 +23,21 @@ const ENCRYPTION_KEY = '8a156354cc87f9b44f1c434d1e049178'
 let fnId = ''
 
 // Test Database
+let blsGateway: Gateway
 let mongoServer: MongoMemoryServer
 
 beforeAll(async () => {
 	mongoServer = await MongoMemoryServer.create({ binary: { version: '6.0.8' } })
-	setConnection(mongoServer.getUri('test'))
+
+	blsGateway = new Gateway({
+		mongoUri: mongoServer.getUri('test'),
+		headNodeUri: 'https://head.bls.dev'
+	})
 }, 10000)
 
 describe('Functions Controller', () => {
 	it('should create a function', async () => {
-		const fn = await createFunction(FN_TYPE, USER_ADDRESS, {
+		const fn = await blsGateway.functions.create(FN_TYPE, USER_ADDRESS, {
 			functionName: FN_NAME,
 			functionId: FN_CID
 		})
@@ -53,7 +51,7 @@ describe('Functions Controller', () => {
 
 	it('should not create a function with a duplicate name', async () => {
 		await expect(
-			createFunction(FN_TYPE, USER_ADDRESS, {
+			blsGateway.functions.create(FN_TYPE, USER_ADDRESS, {
 				functionName: FN_NAME,
 				functionId: FN_CID
 			})
@@ -61,12 +59,12 @@ describe('Functions Controller', () => {
 	})
 
 	it('should fetch a single function by id', async () => {
-		const fn = await getFunction(FN_TYPE, USER_ADDRESS, fnId)
+		const fn = await blsGateway.functions.get(FN_TYPE, USER_ADDRESS, fnId)
 		expect(fn._id).toStrictEqual(fnId)
 	})
 
 	it('should list all created functions', async () => {
-		const fns = await listFunctions(FN_TYPE, USER_ADDRESS, {})
+		const fns = await blsGateway.functions.list(FN_TYPE, USER_ADDRESS, {})
 		expect(fns).toHaveProperty('docs')
 		expect(fns.docs.length).toBe(1)
 		expect(fns.totalDocs).toBe(1)
@@ -75,7 +73,7 @@ describe('Functions Controller', () => {
 	})
 
 	it('should update a function data', async () => {
-		const fn = await updateFunction(FN_TYPE, USER_ADDRESS, fnId, {
+		const fn = await blsGateway.functions.update(FN_TYPE, USER_ADDRESS, fnId, {
 			functionName: FN_NAME_UPDATED
 		})
 
@@ -88,7 +86,13 @@ describe('Functions Controller', () => {
 			ENV2: 'value2'
 		}
 
-		const fn = await updateFunctionEnvVars(FN_TYPE, USER_ADDRESS, fnId, { envVars }, ENCRYPTION_KEY)
+		const fn = await blsGateway.functions.updateEnvVars(
+			FN_TYPE,
+			USER_ADDRESS,
+			fnId,
+			{ envVars },
+			ENCRYPTION_KEY
+		)
 
 		expect(fn).toHaveProperty('envVars')
 		expect(fn.envVars.length).toBe(2)
@@ -102,7 +106,13 @@ describe('Functions Controller', () => {
 			ENV2: 'value2'
 		}
 
-		const fn = await updateFunctionEnvVars(FN_TYPE, USER_ADDRESS, fnId, { envVars }, ENCRYPTION_KEY)
+		const fn = await blsGateway.functions.updateEnvVars(
+			FN_TYPE,
+			USER_ADDRESS,
+			fnId,
+			{ envVars },
+			ENCRYPTION_KEY
+		)
 
 		expect(fn).toHaveProperty('envVars')
 		expect(fn.envVars.length).toBe(1)
@@ -174,9 +184,9 @@ describe('Functions Helpers', () => {
 
 describe('Functions Cleanup', () => {
 	it('should delete a function', async () => {
-		await deleteFunction(FN_TYPE, USER_ADDRESS, fnId)
+		await blsGateway.functions.delete(FN_TYPE, USER_ADDRESS, fnId)
 
-		const fns = await listFunctions(FN_TYPE, USER_ADDRESS, {})
+		const fns = await blsGateway.functions.list(FN_TYPE, USER_ADDRESS, {})
 		expect(fns).toHaveProperty('docs')
 		expect(fns.docs.length).toBe(0)
 	})
