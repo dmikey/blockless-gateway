@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
 
-import { IFunctionRequestData, lookupAndInvokeFunction } from '@blocklessnetwork/gateway-core'
+import { IFunctionRequestData } from '@blocklessnetwork/gateway-core'
 
 import { REGEX_HOST_MATCH, REGEX_HOST_NOT_MATCH } from '../constants'
+import gatewayClient from '../utils/gatewayClient'
 
 /**
  * Invoke a function for a hostname, directly via a fastify request
@@ -23,7 +24,7 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
 		body: request.body as unknown
 	}
 
-	const response = await lookupAndInvokeFunction('subdomain', domain, requestData, {
+	const response = await gatewayClient.functions.invoke('subdomain', domain, requestData, {
 		encryptionKey: process.env.ENV_ENCRYPTION_SECRET!,
 		headNodeHost: process.env.HEAD_NODE_HOST!
 	})
@@ -43,7 +44,7 @@ async function invokePathAPI(request: FastifyRequest, reply: FastifyReply) {
 	const { path } = request.body as any
 	const requestData = { path }
 
-	const response = await lookupAndInvokeFunction('invocationId', id, requestData, {
+	const response = await gatewayClient.functions.invoke('invocationId', id, requestData, {
 		encryptionKey: process.env.ENV_ENCRYPTION_SECRET!,
 		headNodeHost: process.env.HEAD_NODE_HOST!
 	})

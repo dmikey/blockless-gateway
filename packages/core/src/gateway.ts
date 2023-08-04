@@ -2,9 +2,11 @@ import mongoose from 'mongoose'
 
 import { BaseErrors } from './errors'
 import { generateUserChallenge, getUser, verifyUserWalletSignature } from './services/auth'
+import { fetchFunctionManifest, storeFunctionManifest } from './services/functionManifests'
 import {
 	createFunction,
 	deleteFunction,
+	deployFunction,
 	getFunction,
 	listFunctions,
 	updateFunction,
@@ -35,7 +37,13 @@ export class Gateway {
 		update: typeof updateFunction
 		updateEnvVars: typeof updateFunctionEnvVars
 		delete: typeof deleteFunction
+		deploy: typeof deployFunction
 		invoke: typeof lookupAndInvokeFunction
+	}
+
+	functionManifests: {
+		fetch: typeof fetchFunctionManifest
+		store: typeof storeFunctionManifest
 	}
 
 	headNode: {
@@ -57,7 +65,13 @@ export class Gateway {
 			update: updateFunction.bind(this),
 			updateEnvVars: updateFunctionEnvVars.bind(this),
 			delete: deleteFunction.bind(this),
+			deploy: deployFunction.bind(this),
 			invoke: lookupAndInvokeFunction.bind(this)
+		}
+
+		this.functionManifests = {
+			fetch: fetchFunctionManifest.bind(this),
+			store: storeFunctionManifest.bind(this)
 		}
 
 		this.auth = {
