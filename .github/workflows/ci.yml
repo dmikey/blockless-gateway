@@ -15,16 +15,22 @@ jobs:
           # Make sure the actual branch is checked out when running on pull requests
           ref: ${{ github.head_ref }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: yarn
+
       - name: Create NPMRC
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ./.npmrc
           echo "@blocklessnetwork:registry=https://npm.pkg.github.com" >> ./.npmrc
 
       - name: Install dependencies
-        run: npm i
+        run: yarn install
 
       - name: Prettier
-        run: npm run format
+        run: yarn format
 
       - name: Test
-        run: npm test
+        run: yarn test

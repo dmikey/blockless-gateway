@@ -1,0 +1,42 @@
+name: Publish to NPM
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: yarn
+
+      - name: Create NPMRC
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ./.npmrc
+          echo "@blocklessnetwork/ui-components:registry=https://npm.pkg.github.com" >> ./.npmrc
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build:core
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "@blocklessnetwork/gateway-core:registry=https://registry.npmjs.org" >> ./.npmrc
+          npm publish --access public
+        working-directory: packages/core
