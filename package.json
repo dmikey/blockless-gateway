@@ -10,6 +10,7 @@
 		"prepare": "husky install",
 		"build:core": "yarn workspace @blockless/gateway-core build",
 		"build:server": "yarn workspace @blockless/gateway-server build",
+		"build:ui": "yarn workspace @blockless/gateway-ui build",
 		"format": "prettier --check .",
 		"format:fix": "prettier --write .",
 		"test": "yarn workspace @blockless/gateway-core test"

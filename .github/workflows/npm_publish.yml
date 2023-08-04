@@ -33,6 +33,9 @@ jobs:
           npm publish --access public
         working-directory: packages/core
 
+      - name: Build UI
+        run: yarn build:ui
+
       - name: Publish UI
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
