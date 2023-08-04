@@ -1,6 +1,7 @@
-import { Box, Flex, Text, toast } from '@blocklessnetwork/ui-components'
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
+
+import { Box, Flex, Text, toast } from '@blockless/ui-components'
 
 import Base from './Base'
 import WalletLoading from './wallets/Loading'

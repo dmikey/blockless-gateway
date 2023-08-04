@@ -14,7 +14,7 @@
 		"build": "yarn build:pages && yarn build:fastify"
 	},
 	"dependencies": {
-		"@blocklessnetwork/ui-components": "^0.1.26",
+		"@blockless/ui-components": "^0.1.27",
 		"@fastify/static": "^6.10.2",
 		"ethers": "^6.7.0",
 		"fastify": "^4.21.0",

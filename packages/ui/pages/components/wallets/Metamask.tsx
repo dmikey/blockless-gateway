@@ -1,6 +1,7 @@
-import { Blockless, Box, Flex, Image, Link, Text } from '@blocklessnetwork/ui-components'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
+
+import { Blockless, Box, Flex, Image, Link, Text } from '@blockless/ui-components'
 
 import { fetchAuthChallenge, fetchAuthToken } from '../../actions/auth'
 

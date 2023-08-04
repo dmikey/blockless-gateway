@@ -1661,10 +1661,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@blocklessnetwork/ui-components@^0.1.26":
-  version "0.1.26"
-  resolved "https://npm.pkg.github.com/download/@blocklessnetwork/ui-components/0.1.26/32fa62fa742ad491abdbbeb29ad1dab4652a936a#32fa62fa742ad491abdbbeb29ad1dab4652a936a"
-  integrity sha512-UGrnWQO3nAQjv7WRIhYAKQap9CVAZWSL/rjZuAl6BUZHv7IDpJwTgkIkMWb67DyVgZAnWGqzyvP6mkP/iK1Tig==
+"@blockless/ui-components@^0.1.27":
+  version "0.1.27"
+  resolved "https://registry.yarnpkg.com/@blockless/ui-components/-/ui-components-0.1.27.tgz#29786b3469707eb0c855b6716ea5e4e6726b3f23"
+  integrity sha512-Es+4SoMmE1gKaM4N4C6Vu+6k2CKOB1HAqpAomdGYSTMu4ZL087xa32Ml/zYmsPtPaFKg9Q7Gdyn0fQLoxOHjVA==
   dependencies:
     "@chakra-ui/icons" "^2.0.12"
     "@chakra-ui/react" "^2.4.2"

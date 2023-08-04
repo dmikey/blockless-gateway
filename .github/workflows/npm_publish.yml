@@ -16,11 +16,6 @@ jobs:
           node-version: 16
           cache: yarn
 
-      - name: Create NPMRC
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> ./.npmrc
-          echo "@blocklessnetwork/ui-components:registry=https://npm.pkg.github.com" >> ./.npmrc
-
       - name: Install dependencies
         run: yarn install
 

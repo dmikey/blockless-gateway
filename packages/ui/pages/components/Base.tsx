@@ -1,4 +1,4 @@
-import { BlocklessUIProvider, consoleTheme, extendTheme } from '@blocklessnetwork/ui-components'
+import { BlocklessUIProvider, consoleTheme, extendTheme } from '@blockless/ui-components'
 
 function Base({ children }: { children: any }) {
 	const theme = extendTheme(consoleTheme)
