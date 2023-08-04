@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-import { BaseErrors, getUserWallet, getUserWalletByType } from '@blocklessnetwork/gateway-core'
+import { BaseErrors, getUserWallet, getUserWalletByType } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import {

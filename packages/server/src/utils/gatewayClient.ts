@@ -1,4 +1,4 @@
-import Gateway from '@blocklessnetwork/gateway-core'
+import Gateway from '@blockless/gateway-core'
 
 class GatewayClient {
 	gatewayClient: Gateway

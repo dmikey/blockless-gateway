@@ -1,5 +1,5 @@
 {
-	"name": "@blocklessnetwork/gateway",
+	"name": "@blockless/gateway",
 	"private": true,
 	"version": "1.0.0",
 	"license": "Apache-2.0",
@@ -8,11 +8,11 @@
 	],
 	"scripts": {
 		"prepare": "husky install",
-		"build:core": "yarn workspace @blocklessnetwork/gateway-core build",
-		"build:server": "yarn workspace @blocklessnetwork/gateway-server build",
+		"build:core": "yarn workspace @blockless/gateway-core build",
+		"build:server": "yarn workspace @blockless/gateway-server build",
 		"format": "prettier --check .",
 		"format:fix": "prettier --write .",
-		"test": "yarn workspace @blocklessnetwork/gateway-core test"
+		"test": "yarn workspace @blockless/gateway-core test"
 	},
 	"devDependencies": {
 		"@trivago/prettier-plugin-sort-imports": "^4.2.0",

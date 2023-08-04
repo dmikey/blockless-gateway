@@ -1,6 +1,5 @@
-import { motion } from 'framer-motion'
-
 import { Text, VStack } from '@blocklessnetwork/ui-components'
+import { motion } from 'framer-motion'
 
 interface LoadingProps {
 	walletType: 'metamask' | 'keplr' | 'martianWallet'

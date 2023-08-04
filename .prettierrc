@@ -4,7 +4,7 @@
 	"trailingComma": "none",
 	"semi": false,
 	"printWidth": 100,
-	"importOrder": ["^@blocklessnetwork/(.*)$", "^[./]"],
+	"importOrder": ["^@blockless/(.*)$", "^[./]"],
 	"importOrderSeparation": true,
 	"importOrderSortSpecifiers": true,
 	"plugins": ["@trivago/prettier-plugin-sort-imports"]

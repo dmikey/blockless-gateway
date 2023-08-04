@@ -1,5 +1,5 @@
 {
-	"name": "@blocklessnetwork/gateway-server",
+	"name": "@blockless/gateway-server",
 	"version": "1.0.0",
 	"main": "build/index.js",
 	"license": "Apache-2.0",
@@ -11,8 +11,8 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
-		"@blocklessnetwork/gateway-core": "*",
-		"@blocklessnetwork/gateway-ui": "*",
+		"@blockless/gateway-core": "*",
+		"@blockless/gateway-ui": "*",
 		"@fastify/env": "^4.2.0",
 		"@fastify/jwt": "^7.2.0",
 		"@fastify/multipart": "^7.7.3",

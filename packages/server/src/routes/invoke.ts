@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
 
-import { IFunctionRequestData } from '@blocklessnetwork/gateway-core'
+import { IFunctionRequestData } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH, REGEX_HOST_NOT_MATCH } from '../constants'
 import gatewayClient from '../utils/gatewayClient'

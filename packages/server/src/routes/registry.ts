@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify'
 import { File } from 'web3.storage'
 
-import { BaseErrors, IFunctionManifestRecord } from '@blocklessnetwork/gateway-core'
+import { BaseErrors, IFunctionManifestRecord } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import gatewayClient from '../utils/gatewayClient'

@@ -1,6 +1,6 @@
 import { FastifyRequest } from 'fastify'
 
-import { FunctionStatuses, IFunctionRecord } from '@blocklessnetwork/gateway-core'
+import { FunctionStatuses, IFunctionRecord } from '@blockless/gateway-core'
 
 export type FunctionCreateRequest = FastifyRequest<{
 	Body: {

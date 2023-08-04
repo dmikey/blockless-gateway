@@ -1,6 +1,6 @@
 import { FastifyRequest } from 'fastify'
 
-import { UserWalletRequest, UserWalletType } from '@blocklessnetwork/gateway-core'
+import { UserWalletRequest, UserWalletType } from '@blockless/gateway-core'
 
 // Schemas
 

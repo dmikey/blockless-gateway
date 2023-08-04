@@ -5,7 +5,7 @@ import 'dotenv/config'
 import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 
-import gatewayUI from '@blocklessnetwork/gateway-ui'
+import gatewayUI from '@blockless/gateway-ui'
 
 import { API_PATH, REGEX_HOST_MATCH } from './constants'
 import { authenticateHook } from './hooks/authenticate'
