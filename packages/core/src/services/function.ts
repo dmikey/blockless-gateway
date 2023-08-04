@@ -176,10 +176,10 @@ export async function listFunctions(
 export async function getFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string }
+	id: string
 ): Promise<IFunctionModel> {
 	const fn = await Functions.findOne({
-		_id: data._id,
+		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
@@ -238,6 +238,7 @@ export async function createFunction(
 export async function updateFunction(
 	type: 'function' | 'site',
 	userId: string,
+	id: string,
 	data: Partial<IFunctionRecord>
 ): Promise<IFunctionModel> {
 	const updateObj = {} as Partial<IFunctionRecord>
@@ -248,7 +249,7 @@ export async function updateFunction(
 
 		// Match existing function
 		const matchExistingName = await Functions.count({
-			_id: { $ne: data._id },
+			_id: { $ne: id },
 			functionName,
 			userId: { $regex: userId, $options: 'i' }
 		})
@@ -272,7 +273,7 @@ export async function updateFunction(
 	// Perform the update
 	const fn = await Functions.findOneAndUpdate(
 		{
-			_id: data._id,
+			_id: id,
 			userId: { $regex: userId, $options: 'i' },
 			$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 		},
@@ -296,14 +297,15 @@ export async function updateFunction(
 export async function updateFunctionEnvVars(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string; envVars: KeyValueObject },
+	id: string,
+	data: { envVars: KeyValueObject },
 	encryptionKey?: string
 ) {
 	const envVars = data.envVars
 	if (!envVars) throw new BaseErrors.ERR_FUNCTION_ENVVARS_NOT_FOUND()
 
 	const fn = await Functions.findOne({
-		_id: data._id,
+		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
@@ -361,10 +363,10 @@ export async function updateFunctionEnvVars(
 export async function deleteFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string }
+	id: string
 ): Promise<IFunctionModel> {
 	const fn = await Functions.findOneAndDelete({
-		_id: data._id,
+		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
@@ -384,19 +386,20 @@ export async function deleteFunction(
 export async function deployFunction(
 	type: 'function' | 'site',
 	userId: string,
-	data: { _id: string; cid: string },
+	id: string,
+	data: { functionId: string },
 	options?: { headNodeHost?: string }
 ): Promise<IFunctionModel> {
 	// Request a deployment for the function
-	await installHeadNodeFunction(data.cid, 1, options?.headNodeHost)
+	await installHeadNodeFunction(data.functionId, 1, options?.headNodeHost)
 
 	// Cache Manifest
-	await fetchFunctionManifest(data.cid)
+	await fetchFunctionManifest(data.functionId)
 
 	// Update deploy status
 	const fn = await Functions.findOneAndUpdate(
 		{
-			_id: data._id,
+			_id: id,
 			userId: { $regex: userId, $options: 'i' },
 			$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 		},

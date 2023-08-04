@@ -61,7 +61,7 @@ describe('Functions Controller', () => {
 	})
 
 	it('should fetch a single function by id', async () => {
-		const fn = await getFunction(FN_TYPE, USER_ADDRESS, { _id: fnId })
+		const fn = await getFunction(FN_TYPE, USER_ADDRESS, fnId)
 		expect(fn._id).toStrictEqual(fnId)
 	})
 
@@ -75,8 +75,7 @@ describe('Functions Controller', () => {
 	})
 
 	it('should update a function data', async () => {
-		const fn = await updateFunction(FN_TYPE, USER_ADDRESS, {
-			_id: fnId,
+		const fn = await updateFunction(FN_TYPE, USER_ADDRESS, fnId, {
 			functionName: FN_NAME_UPDATED
 		})
 
@@ -89,15 +88,7 @@ describe('Functions Controller', () => {
 			ENV2: 'value2'
 		}
 
-		const fn = await updateFunctionEnvVars(
-			FN_TYPE,
-			USER_ADDRESS,
-			{
-				_id: fnId,
-				envVars
-			},
-			ENCRYPTION_KEY
-		)
+		const fn = await updateFunctionEnvVars(FN_TYPE, USER_ADDRESS, fnId, { envVars }, ENCRYPTION_KEY)
 
 		expect(fn).toHaveProperty('envVars')
 		expect(fn.envVars.length).toBe(2)
@@ -111,15 +102,7 @@ describe('Functions Controller', () => {
 			ENV2: 'value2'
 		}
 
-		const fn = await updateFunctionEnvVars(
-			FN_TYPE,
-			USER_ADDRESS,
-			{
-				_id: fnId,
-				envVars
-			},
-			ENCRYPTION_KEY
-		)
+		const fn = await updateFunctionEnvVars(FN_TYPE, USER_ADDRESS, fnId, { envVars }, ENCRYPTION_KEY)
 
 		expect(fn).toHaveProperty('envVars')
 		expect(fn.envVars.length).toBe(1)
@@ -191,9 +174,7 @@ describe('Functions Helpers', () => {
 
 describe('Functions Cleanup', () => {
 	it('should delete a function', async () => {
-		await deleteFunction(FN_TYPE, USER_ADDRESS, {
-			_id: fnId
-		})
+		await deleteFunction(FN_TYPE, USER_ADDRESS, fnId)
 
 		const fns = await listFunctions(FN_TYPE, USER_ADDRESS, {})
 		expect(fns).toHaveProperty('docs')

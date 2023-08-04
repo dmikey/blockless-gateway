@@ -71,7 +71,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { id } = request.params
 			const { publicAddress } = request.user
 
-			return await getFunction(type, publicAddress, { _id: id })
+			return await getFunction(type, publicAddress, id)
 		}
 	)
 
@@ -85,7 +85,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { id } = request.params
 			const { publicAddress } = request.user
 
-			return await updateFunction(type, publicAddress, { _id: id, ...request.body })
+			return await updateFunction(type, publicAddress, id, { ...request.body })
 		}
 	)
 
@@ -103,7 +103,8 @@ export const register = (server: FastifyInstance, opts, next) => {
 			return await updateFunctionEnvVars(
 				type,
 				publicAddress,
-				{ _id: id, envVars },
+				id,
+				{ envVars },
 				process.env.ENV_ENCRYPTION_SECRET!
 			)
 		}
@@ -119,7 +120,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { id } = request.params
 			const { publicAddress } = request.user
 
-			return await deleteFunction('function', publicAddress, { _id: id })
+			return await deleteFunction('function', publicAddress, id)
 		}
 	)
 
@@ -137,7 +138,8 @@ export const register = (server: FastifyInstance, opts, next) => {
 			return await deployFunction(
 				type,
 				publicAddress,
-				{ _id: id, cid: functionId },
+				id,
+				{ functionId },
 				{ headNodeHost: process.env.HEAD_NODE_HOST! }
 			)
 		}
