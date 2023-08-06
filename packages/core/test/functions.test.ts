@@ -160,7 +160,7 @@ describe('Functions Request Parser', () => {
 			{ name: 'BLS_REQUEST_PATH', value: '/test' },
 			{ name: 'BLS_REQUEST_PARAMS', value: 'param1=value1&param2=value2' },
 			{ name: 'BLS_REQUEST_QUERY', value: 'query1=value1&query2=value2' },
-			{ name: 'BLS_REQUEST_HEADERS', value: 'query1=value1&query2=value2' },
+			{ name: 'BLS_REQUEST_HEADERS', value: 'header1=value1&header2=value2' },
 			{ name: 'BLS_REQUEST_BODY', value: '{"key":"value"}' }
 		])
 	})

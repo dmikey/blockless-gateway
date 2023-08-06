@@ -65,7 +65,7 @@ export function parseFunctionRequestVars(requestData: IFunctionRequestData): INa
 
 	requestVars.push({
 		name: 'BLS_REQUEST_HEADERS',
-		value: Object.entries(requestData.query || [])
+		value: Object.entries(requestData.headers || [])
 			.map(([key, value]) => `${key}=${value}`)
 			.join('&')
 	})
