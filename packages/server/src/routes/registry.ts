@@ -53,7 +53,7 @@ export const register = (server: FastifyInstance, opts: FastifyPluginOptions, ne
 			// Store manifest in db
 			await gatewayClient.functionManifests.store(cid, manifest)
 
-			return { cid, manifest }
+			return { cid, name: manifest.name, manifest }
 		}
 	)
 

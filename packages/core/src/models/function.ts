@@ -39,6 +39,7 @@ export interface IFunctionRequestData {
 }
 
 export interface IFunctionManifestRecord {
+	name: string
 	entry: string
 	contentType: string
 	permissions: string[]
