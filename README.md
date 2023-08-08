@@ -4,11 +4,17 @@
 
 This monorepo contains:
 
-#### Gateway Core
+#### [Gateway Core](./packages/core)
 
-#### Gateway Server
+Gateway to communicate with the Blockless Network.
 
-#### Gateway UI
+#### [Gateway Server](./packages/server)
+
+A RESTful API server for the Blockless Gateway, built with Fastify + Caddy.
+
+#### [Gateway UI](./packages/ui)
+
+A collection of UI pages to interact with the Blockless Gateway.
 
 ## Documentation
 
