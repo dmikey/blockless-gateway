@@ -5,6 +5,7 @@ import 'dotenv/config'
 import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 
+import { BaseErrors } from '@blockless/gateway-core'
 import gatewayUI from '@blockless/gateway-ui'
 
 import { API_PATH, REGEX_HOST_MATCH } from './constants'
@@ -41,7 +42,7 @@ server.register(fastifyJwt, { secret: process.env.JWT_SECRET! })
 server.register(fastifyMultipart)
 
 // UI
-server.register(gatewayUI, { hostConstraint: REGEX_HOST_MATCH, pages: ['login'] })
+server.register(gatewayUI, { hostConstraint: REGEX_HOST_MATCH, pages: ['login', '404'] })
 
 // Hooks
 server.register(fastifyPlugin(authenticateHook))

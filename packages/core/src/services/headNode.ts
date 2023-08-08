@@ -16,7 +16,7 @@ import { fetchCache, storeCache } from './headNodeCache'
  */
 export async function callHeadNodeFunction(
 	payload: IHeadNodePayload,
-	retries: number = 0,
+	retries = 0,
 	headNodeHost: string = HEAD_NODE_HOST
 ): Promise<IHeadNodeResponse> {
 	let i = 0
@@ -45,7 +45,7 @@ export async function callHeadNodeFunction(
  */
 export async function installHeadNodeFunction(
 	functionId: string,
-	count: number = 1,
+	count = 1,
 	headNodeHost: string = HEAD_NODE_HOST
 ): Promise<IHeadNodeResponse> {
 	const response = await axios.post(`${headNodeHost}/api/v1/functions/install?count=${count}`, {
