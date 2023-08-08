@@ -35,10 +35,10 @@ const gateway = new Gateway({
 	headNodeUri: process.env.HEAD_NODE_HOST!
 })
 
-const subdomain = 'hello-world-fn.bls.xyz'
-const response = await gateway.functions.invoke('subdomain', subdomain)
+const domain = 'hello-world-fn.bls.xyz'
+const response = await gateway.functions.invoke('domain', domain)
 console.log(response)
-// 'Hello World'
+// { code: 200, headers: [], type: 'text/html', body: 'Hello World' }
 ```
 
 ## Documentation
