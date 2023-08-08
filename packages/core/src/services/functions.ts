@@ -207,7 +207,7 @@ export async function createFunction(
 	const subdomain = generateSubdomain(functionName, userId)
 
 	// Build a new function object
-	let newFunction = new Functions({
+	const newFunction = new Functions({
 		userId,
 		type,
 		functionName,
@@ -235,7 +235,7 @@ export async function updateFunction(
 ): Promise<IFunctionModel> {
 	const updateObj = {} as Partial<IFunctionRecord>
 
-	if (!!data.functionName) {
+	if (data.functionName) {
 		// Validate function name
 		const functionName = validateFunctionName(data.functionName!)
 
@@ -253,12 +253,12 @@ export async function updateFunction(
 	}
 
 	// TODO: Validate function status here
-	if (!!data.status) {
+	if (data.status) {
 		updateObj.status = data.status
 	}
 
 	// Update deployment function ID, used by the CLI deployment command
-	if (!!data.functionId) {
+	if (data.functionId) {
 		updateObj.functionId = data.functionId
 	}
 
@@ -312,7 +312,7 @@ export async function updateFunctionEnvVars(
 				if (foundIndex !== -1) {
 					fn.envVars.splice(foundIndex, 1)
 				}
-			} else if (!!envVars[key]) {
+			} else if (envVars[key]) {
 				if (encryptionKey) {
 					const { value, iv } = encryptValue(envVars[key]!, encryptionKey)
 

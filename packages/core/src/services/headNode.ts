@@ -28,9 +28,9 @@ export async function callHeadNodeFunction(
 			if (response.data.code === '200' || response.data.code === 200) {
 				return response.data
 			}
-		} catch (error) {}
-
-		i++
+		} catch {
+			i++
+		}
 	}
 
 	throw new BaseErrors.ERR_HEAD_FAILED_TO_EXECUTE()

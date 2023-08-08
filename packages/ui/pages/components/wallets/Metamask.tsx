@@ -15,7 +15,7 @@ export default function WalletMetamask({ onLogin, onLoading }: WalletMetamaskPro
 
 	// Check availability for Metamask
 	useEffect(() => {
-		if ((window as any).ethereum) {
+		if (window.ethereum) {
 			setIsAvailable(true)
 		} else {
 			console.warn('Metamask not found. Please install Metamask extension.')
@@ -26,7 +26,7 @@ export default function WalletMetamask({ onLogin, onLoading }: WalletMetamaskPro
 	// Handle login
 	const handleLogin = async () => {
 		onLoading()
-		const provider = new ethers.BrowserProvider((window as any).ethereum)
+		const provider = new ethers.BrowserProvider(window.ethereum)
 
 		try {
 			const signer = await provider.getSigner()

@@ -3,6 +3,7 @@ import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } f
 import { IFunctionRequestData } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH, REGEX_HOST_NOT_MATCH } from '../constants'
+import { InvokePathRequest } from '../schema/invoke'
 import gatewayClient from '../utils/gatewayClient'
 
 /**
@@ -39,9 +40,9 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
  * @param reply
  * @returns
  */
-async function invokePathAPI(request: FastifyRequest, reply: FastifyReply) {
-	const { id } = request.params as any
-	const { path } = request.body as any
+async function invokePathAPI(request: InvokePathRequest, reply: FastifyReply) {
+	const { id } = request.params
+	const { path } = request.body
 	const requestData = { path }
 
 	const response = await gatewayClient.functions.invoke('invocationId', id, requestData, {

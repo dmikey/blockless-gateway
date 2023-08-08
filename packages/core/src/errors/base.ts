@@ -10,7 +10,7 @@ export interface BaseError extends Error {
  */
 export interface BaseErrorConstructor<
 	E extends { code: string; statusCode?: number } = { code: string; statusCode?: number },
-	T extends unknown[] = [any?, any?, any?]
+	T extends unknown[] = [unknown?, unknown?, unknown?]
 > {
 	new (...args: T): BaseError & E
 	(...args: T): BaseError & E
@@ -23,6 +23,7 @@ export interface BaseErrorConstructor<
  * @param errorCodesConfig
  * @returns
  */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function createErrorClasses<
 	T extends Record<string, { statusCode?: number; message?: string }>
 >(errorCodesConfig: T): { [K in keyof T]: BaseErrorConstructor<any> } {
@@ -48,3 +49,4 @@ export function createErrorClasses<
 
 	return errorCodes as { [K in keyof T]: BaseErrorConstructor<any> }
 }
+/* eslint-enable  @typescript-eslint/no-explicit-any */

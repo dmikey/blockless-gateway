@@ -1,7 +1,7 @@
 export interface IHeadNodePayload {
 	function_id: string
 	method: string
-	parameters: any
+	parameters: unknown
 	config: {
 		permissions: string[]
 		env_vars: {

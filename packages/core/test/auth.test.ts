@@ -8,8 +8,8 @@ import { getUserWallet, getUserWalletByType } from '../src/helpers/auth'
 import { UserWalletType } from '../src/models/user'
 
 // Constants
-let ETH_USER_ADDRESS = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
-let ETH_USER_PK = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+const ETH_USER_ADDRESS = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'
+const ETH_USER_PK = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
 
 // Test Database
 let blsGateway: Gateway
