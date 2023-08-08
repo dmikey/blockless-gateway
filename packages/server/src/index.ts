@@ -5,7 +5,6 @@ import 'dotenv/config'
 import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 
-import { BaseErrors } from '@blockless/gateway-core'
 import gatewayUI from '@blockless/gateway-ui'
 
 import { API_PATH, REGEX_HOST_MATCH } from './constants'

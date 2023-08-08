@@ -11,8 +11,8 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
-		"@blockless/gateway-core": "^0.0.10",
-		"@blockless/gateway-ui": "^0.0.10",
+		"@blockless/gateway-core": "*",
+		"@blockless/gateway-ui": "*",
 		"@fastify/env": "^4.2.0",
 		"@fastify/jwt": "^7.2.0",
 		"@fastify/multipart": "^7.7.3",
