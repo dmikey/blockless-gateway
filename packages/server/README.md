@@ -9,13 +9,13 @@ Copy .env.example to .env
 Pull the latest docker image from the repository:
 
 ```
-docker pull ghcr.io/blocklessnetwork/gateway:latest
+docker pull ghcr.io/blocklessnetwork/gateway-server:latest
 ```
 
 Run the container:
 
 ```
-docker run -d --name gateway-server -p 80:80 -p 443:443 --env-file .env ghcr.io/blocklessnetwork/gateway:latest
+docker run -d --name gateway-server -p 80:80 -p 443:443 --env-file .env ghcr.io/blocklessnetwork/gateway-server:latest
 ```
 
 ### Deploy on Aakash
