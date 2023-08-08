@@ -2,16 +2,24 @@
 
 [![CI](https://github.com/blocklessnetwork/gateway/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/blocklessnetwork/gateway/actions/workflows/ci.yml)
 
-## Development
+This monorepo contains:
 
-To start the development server, run
+#### [Gateway Core](./packages/core)
 
-`yarn dev`
+Gateway to communicate with the Blockless Network.
 
-and to setup the Caddy reverse proxy locally, run
+#### [Gateway Server](./packages/server)
 
-`yarn dev:caddy`
+A RESTful API server for the Blockless Gateway, built with Fastify + Caddy.
+
+#### [Gateway UI](./packages/ui)
+
+A collection of UI pages to interact with the Blockless Gateway.
+
+## Documentation
+
+For the latest documentation, visit [Blockless Docs](https://blockless.network/docs)
 
 ## Contributing
 
-See src/README for information on contributing to the Blockless Gateway project.
+Refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) guide for details.
