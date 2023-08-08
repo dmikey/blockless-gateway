@@ -20,7 +20,7 @@ FROM caddy:2.7-builder AS caddy
 
 # Stage 2: Using xcaddy build the Caddy binary along with it's modules 
 RUN xcaddy build \
-  --with github.com/caddy-dns/cloudflare
+  --with github.com/caddy-dns/cloudflare@a9d3ae2690a1d232bc9f8fc8b15bd4e0a6960eec
 
 # Stage 3: Create the final image with the Node.js application and Caddy
 FROM node:18-alpine
