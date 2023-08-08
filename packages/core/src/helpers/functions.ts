@@ -37,7 +37,7 @@ export function parseFunctionEnvVars(
  * @returns
  */
 export function parseFunctionRequestVars(requestData: IFunctionRequestData): INameValueArray {
-	let requestVars = [] as INameValueArray
+	const requestVars = [] as INameValueArray
 
 	requestVars.push({
 		name: 'BLS_REQUEST_METHOD',
@@ -90,7 +90,7 @@ export function parseFunctionRequestVars(requestData: IFunctionRequestData): INa
  * @returns
  */
 export function parseFunctionResponse(data: IHeadNodeResponse) {
-	let body = null as any
+	let body = null as unknown
 	let type = 'text/html'
 
 	if (data.result.startsWith('data:')) {

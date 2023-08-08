@@ -11,6 +11,8 @@
 		"build:core": "yarn workspace @blockless/gateway-core build",
 		"build:server": "yarn workspace @blockless/gateway-server build",
 		"build:ui": "yarn workspace @blockless/gateway-ui build",
+		"lint": "eslint .",
+		"lint:fix": "eslint --fix .",
 		"format": "prettier --check .",
 		"format:fix": "prettier --write .",
 		"test": "yarn workspace @blockless/gateway-core test"
@@ -18,6 +20,9 @@
 	"devDependencies": {
 		"@trivago/prettier-plugin-sort-imports": "^4.2.0",
 		"husky": "^8.0.3",
-		"prettier": "^3.0.0"
+		"prettier": "^3.0.0",
+		"@typescript-eslint/eslint-plugin": "^6.3.0",
+		"@typescript-eslint/parser": "^6.3.0",
+		"eslint": "^8.46.0"
 	}
 }

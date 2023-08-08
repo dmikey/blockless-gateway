@@ -21,5 +21,8 @@ module.exports = {
 		sourceType: 'module'
 	},
 	plugins: ['@typescript-eslint'],
-	rules: {}
+	rules: {
+		'no-mixed-spaces-and-tabs': 'off',
+		'no-case-declarations': 'off'
+	}
 }

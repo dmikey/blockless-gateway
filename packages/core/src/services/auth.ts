@@ -10,13 +10,7 @@ import crypto from 'crypto'
 import nacl from 'tweetnacl'
 
 import { BaseErrors } from '../errors'
-import User, {
-	UserWallet,
-	UserWalletRequest,
-	UserWalletType,
-	UserWalletTypeKey,
-	UserWalletTypeKeys
-} from '../models/user'
+import User, { UserWallet } from '../models/user'
 
 /**
  * Fetch a user document with a gien user wallet object
@@ -25,7 +19,7 @@ import User, {
  * @returns
  */
 export async function getUser(userWallet: UserWallet) {
-	let userLookupQuery: { [key: string]: unknown } = {}
+	const userLookupQuery: { [key: string]: unknown } = {}
 	userLookupQuery[userWallet.walletKey] = { $regex: new RegExp(userWallet.walletAddress, 'i') }
 
 	const user = await User.findOne(userLookupQuery)
@@ -45,9 +39,9 @@ export async function generateUserChallenge({
 	walletKey,
 	walletAddress
 }: UserWallet): Promise<string> {
-	let nonce = crypto.randomBytes(16).toString('base64')
+	const nonce = crypto.randomBytes(16).toString('base64')
 
-	let userLookupQuery: { [key: string]: string } = {}
+	const userLookupQuery: { [key: string]: string } = {}
 	userLookupQuery[walletKey] = walletAddress
 
 	const user = await User.findOneAndUpdate(userLookupQuery, { nonce }, { upsert: true, new: true })

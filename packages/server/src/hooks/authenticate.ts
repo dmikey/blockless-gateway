@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 declare module 'fastify' {
 	interface FastifyInstance {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		authenticate: any
 	}
 }
