@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 
 import { BaseErrors } from '../errors'
+import { Gateway } from '../gateway'
 import { generateSubdomain, validateFunctionName } from '../helpers/functions'
 import { KeyValueObject, Pagination } from '../interfaces/generic'
 import { IFunctionRecord } from '../models/function'
@@ -283,15 +284,14 @@ export async function updateFunction(
  * @param type
  * @param userId
  * @param data
- * @param encryptionKey
  * @returns
  */
 export async function updateFunctionEnvVars(
+	this: Gateway,
 	type: 'function' | 'site',
 	userId: string,
 	id: string,
-	data: { envVars: KeyValueObject },
-	encryptionKey?: string
+	data: { envVars: KeyValueObject }
 ) {
 	const envVars = data.envVars
 	if (!envVars) throw new BaseErrors.ERR_FUNCTION_ENVVARS_NOT_FOUND()
@@ -313,8 +313,8 @@ export async function updateFunctionEnvVars(
 					fn.envVars.splice(foundIndex, 1)
 				}
 			} else if (envVars[key]) {
-				if (encryptionKey) {
-					const { value, iv } = encryptValue(envVars[key]!, encryptionKey)
+				if (this._encryptionKey) {
+					const { value, iv } = encryptValue(envVars[key]!, this._encryptionKey)
 
 					if (foundIndex !== -1) {
 						fn.envVars[foundIndex].name = key
@@ -376,14 +376,14 @@ export async function deleteFunction(
  * @returns
  */
 export async function deployFunction(
+	this: Gateway,
 	type: 'function' | 'site',
 	userId: string,
 	id: string,
-	data: { functionId: string },
-	options?: { headNodeHost?: string }
+	data: { functionId: string }
 ): Promise<IFunctionModel> {
 	// Request a deployment for the function
-	await installHeadNodeFunction(data.functionId, 1, options?.headNodeHost)
+	await installHeadNodeFunction(data.functionId, 1, this._headNodeUri)
 
 	// Cache Manifest
 	await fetchFunctionManifest(data.functionId)

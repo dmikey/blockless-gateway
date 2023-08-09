@@ -91,13 +91,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { envVars } = request.body
 
-			return await gatewayClient.functions.updateEnvVars(
-				type,
-				publicAddress,
-				id,
-				{ envVars },
-				process.env.ENV_ENCRYPTION_SECRET!
-			)
+			return await gatewayClient.functions.updateEnvVars(type, publicAddress, id, { envVars })
 		}
 	)
 
@@ -126,13 +120,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { functionId } = request.body
 
-			return await gatewayClient.functions.deploy(
-				type,
-				publicAddress,
-				id,
-				{ functionId },
-				{ headNodeHost: process.env.HEAD_NODE_HOST! }
-			)
+			return await gatewayClient.functions.deploy(type, publicAddress, id, { functionId })
 		}
 	)
 

@@ -31,7 +31,8 @@ beforeAll(async () => {
 
 	blsGateway = new Gateway({
 		mongoUri: mongoServer.getUri('test'),
-		headNodeUri: 'https://head.bls.dev'
+		headNodeUri: 'https://head.bls.dev',
+		encryptionKey: ENCRYPTION_KEY
 	})
 }, 10000)
 
@@ -86,13 +87,7 @@ describe('Functions Controller', () => {
 			ENV2: 'value2'
 		}
 
-		const fn = await blsGateway.functions.updateEnvVars(
-			FN_TYPE,
-			USER_ADDRESS,
-			fnId,
-			{ envVars },
-			ENCRYPTION_KEY
-		)
+		const fn = await blsGateway.functions.updateEnvVars(FN_TYPE, USER_ADDRESS, fnId, { envVars })
 
 		expect(fn).toHaveProperty('envVars')
 		expect(fn.envVars.length).toBe(2)
@@ -106,13 +101,7 @@ describe('Functions Controller', () => {
 			ENV2: 'value2'
 		}
 
-		const fn = await blsGateway.functions.updateEnvVars(
-			FN_TYPE,
-			USER_ADDRESS,
-			fnId,
-			{ envVars },
-			ENCRYPTION_KEY
-		)
+		const fn = await blsGateway.functions.updateEnvVars(FN_TYPE, USER_ADDRESS, fnId, { envVars })
 
 		expect(fn).toHaveProperty('envVars')
 		expect(fn.envVars.length).toBe(1)
@@ -138,7 +127,7 @@ describe('Functions Encryption', () => {
 		const result = parseFunctionEnvVars(fn!.envVars)
 		expect(result.length).toBe(1)
 		expect(result[0].name).toBe('ENV2')
-		expect(result[0].value).not.toBe('value2')
+		expect(result[0].value).toBe(fn!.envVars[0].value)
 	})
 })
 
