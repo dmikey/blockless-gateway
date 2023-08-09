@@ -1,7 +1,6 @@
 // Base error class
 export interface BaseError extends Error {
 	code: string
-	name: string
 	statusCode?: number
 }
 
@@ -33,7 +32,6 @@ export function createErrorClasses<
 		const { statusCode, ...errorProps } = errorCodesConfig[code]
 		class CustomError extends Error implements BaseError {
 			public code: string
-			public name: string
 			public statusCode?: number
 
 			constructor(message: string) {

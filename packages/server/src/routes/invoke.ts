@@ -25,10 +25,7 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
 		body: request.body as unknown
 	}
 
-	const response = await gatewayClient.functions.invoke('subdomain', domain, requestData, {
-		encryptionKey: process.env.ENV_ENCRYPTION_SECRET!,
-		headNodeHost: process.env.HEAD_NODE_HOST!
-	})
+	const response = await gatewayClient.functions.invoke('subdomain', domain, requestData)
 
 	reply.status(response.status).headers(response.headers).type(response.type).send(response.body)
 }
@@ -45,10 +42,7 @@ async function invokePathAPI(request: InvokePathRequest, reply: FastifyReply) {
 	const { path } = request.body
 	const requestData = { path }
 
-	const response = await gatewayClient.functions.invoke('invocationId', id, requestData, {
-		encryptionKey: process.env.ENV_ENCRYPTION_SECRET!,
-		headNodeHost: process.env.HEAD_NODE_HOST!
-	})
+	const response = await gatewayClient.functions.invoke('invocationId', id, requestData)
 
 	reply.status(response.status).headers(response.headers).type(response.type).send(response.body)
 }

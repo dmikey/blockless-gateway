@@ -1,4 +1,5 @@
 import { BaseErrors } from '../errors'
+import { Gateway } from '../gateway'
 import {
 	parseFunctionEnvVars,
 	parseFunctionRequestVars,
@@ -15,10 +16,10 @@ import { invokeCachedHeadNodeFunction, invokeHeadNodeFunction } from './headNode
  * @param domain
  */
 export async function lookupAndInvokeFunction(
-	type: 'subdomain' | 'domain' | 'invocationId',
+	this: Gateway,
+	type: 'subdomain' | 'domain' | 'invocationId' | 'functionId',
 	value: string,
-	requestData: IFunctionRequestData,
-	options?: { encryptionKey?: string; headNodeHost?: string }
+	requestData: IFunctionRequestData
 ) {
 	let filter: object | null = null
 
@@ -32,6 +33,8 @@ export async function lookupAndInvokeFunction(
 		case 'invocationId':
 			filter = { invocationId: value }
 			break
+		case 'functionId':
+			filter = { functionId: value }
 	}
 
 	if (!filter) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
@@ -66,7 +69,10 @@ export async function lookupAndInvokeFunction(
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
 	if (!fn.functionId) throw new BaseErrors.ERR_FUNCTION_NOT_DEPLOYED()
 
-	return invoke(fn, requestData, options)
+	return invoke(fn, requestData, {
+		encryptionKey: this._encryptionKey,
+		headNodeHost: this._headNodeUri
+	})
 }
 
 /**
@@ -98,7 +104,7 @@ async function invoke(
 	// Call the cached or uncached function on the head node
 	const data = await callFn(
 		fn.functionId,
-		manifest,
+		manifest!,
 		[...envVars, ...requestVars],
 		options?.headNodeHost
 	)

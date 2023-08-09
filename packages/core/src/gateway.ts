@@ -12,47 +12,48 @@ import {
 	updateFunction,
 	updateFunctionEnvVars
 } from './services/functions'
-import { callHeadNodeFunction, installHeadNodeFunction } from './services/headNode'
 import { lookupAndInvokeFunction } from './services/invoke'
 
 interface GatewayOptions {
 	mongoUri: string
 	headNodeUri: string
+	encryptionKey?: string
 }
 
 export class Gateway {
 	_mongoUri: string
 	_headNodeUri: string
+	_encryptionKey?: string | undefined
 
 	auth: {
-		getUser: typeof getUser
-		getChallenge: typeof generateUserChallenge
-		verifySignature: typeof verifyUserWalletSignature
+		getUser: OmitThisParameter<typeof getUser>
+		getChallenge: OmitThisParameter<typeof generateUserChallenge>
+		verifySignature: OmitThisParameter<typeof verifyUserWalletSignature>
 	}
 
 	functions: {
-		list: typeof listFunctions
-		create: typeof createFunction
-		get: typeof getFunction
-		update: typeof updateFunction
-		updateEnvVars: typeof updateFunctionEnvVars
-		delete: typeof deleteFunction
-		deploy: typeof deployFunction
-		invoke: typeof lookupAndInvokeFunction
+		list: OmitThisParameter<typeof listFunctions>
+		create: OmitThisParameter<typeof createFunction>
+		get: OmitThisParameter<typeof getFunction>
+		update: OmitThisParameter<typeof updateFunction>
+		updateEnvVars: OmitThisParameter<typeof updateFunctionEnvVars>
+		delete: OmitThisParameter<typeof deleteFunction>
+		deploy: OmitThisParameter<typeof deployFunction>
+		invoke: OmitThisParameter<typeof lookupAndInvokeFunction>
 	}
 
 	functionManifests: {
-		fetch: typeof fetchFunctionManifest
-		store: typeof storeFunctionManifest
-	}
-
-	headNode: {
-		callFunction: typeof callHeadNodeFunction
-		installFunction: typeof installHeadNodeFunction
+		fetch: OmitThisParameter<typeof fetchFunctionManifest>
+		store: OmitThisParameter<typeof storeFunctionManifest>
 	}
 
 	constructor(options: GatewayOptions) {
-		this._headNodeUri = options.mongoUri
+		this._mongoUri = options.mongoUri
+		this._headNodeUri = options.headNodeUri
+
+		if (options.encryptionKey) {
+			this._encryptionKey = options.encryptionKey
+		}
 
 		if (options.mongoUri) {
 			this.setConnection(options.mongoUri)
@@ -78,11 +79,6 @@ export class Gateway {
 			getUser: getUser.bind(this),
 			getChallenge: generateUserChallenge.bind(this),
 			verifySignature: verifyUserWalletSignature.bind(this)
-		}
-
-		this.headNode = {
-			callFunction: callHeadNodeFunction.bind(this),
-			installFunction: installHeadNodeFunction.bind(this)
 		}
 	}
 

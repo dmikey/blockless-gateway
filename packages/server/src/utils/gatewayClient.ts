@@ -7,7 +7,8 @@ class GatewayClient {
 	constructor() {
 		this.gatewayClient = new Gateway({
 			mongoUri: process.env.MONGO_DB_URI!,
-			headNodeUri: process.env.HEAD_NODE_HOST!
+			headNodeUri: process.env.HEAD_NODE_HOST!,
+			encryptionKey: process.env.ENV_ENCRYPTION_SECRET!
 		})
 	}
 
