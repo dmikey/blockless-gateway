@@ -66,17 +66,22 @@ export interface IFunctionRecord extends IDocument {
 	manifest?: IFunctionManifestRecord
 }
 
-const FunctionEnvVars = new mongoose.Schema({
-	name: String,
-	value: {
-		type: String,
-		select: false
+const FunctionEnvVars = new mongoose.Schema(
+	{
+		name: String,
+		value: {
+			type: String,
+			select: false
+		},
+		iv: {
+			type: String,
+			select: false
+		}
 	},
-	iv: {
-		type: String,
-		select: false
+	{
+		timestamps: true
 	}
-})
+)
 
 const FunctionDomainMapping = new mongoose.Schema(
 	{
