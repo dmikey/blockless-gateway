@@ -124,7 +124,7 @@ function parsePayload(
 	manifest: IFunctionManifestRecord,
 	envVars: INameValueArray
 ): IHeadNodePayload {
-	const pathObj = envVars.find((e) => e.name === 'BLS_REQUEST_PATH')
+	const stdin = envVars.find((e) => e.name === 'BLS_REQUEST_STDIN')
 	return {
 		function_id: functionId,
 		method: manifest.entry,
@@ -132,7 +132,7 @@ function parsePayload(
 		config: {
 			permissions: [...manifest.permissions],
 			env_vars: [...envVars],
-			stdin: pathObj ? pathObj.value : '/',
+			stdin: stdin ? stdin.value : '',
 			number_of_nodes: 1
 		}
 	}
