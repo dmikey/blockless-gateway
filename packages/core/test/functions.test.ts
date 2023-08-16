@@ -143,8 +143,9 @@ describe('Functions Request Parser', () => {
 		}
 
 		const result = parseFunctionRequestVars(requestData)
-		expect(result.length).toBe(6)
+		expect(result.length).toBe(7)
 		expect(result).toStrictEqual([
+			{ name: 'BLS_REQUEST_STDIN', value: '/test' },
 			{ name: 'BLS_REQUEST_METHOD', value: 'GET' },
 			{ name: 'BLS_REQUEST_PATH', value: '/test' },
 			{ name: 'BLS_REQUEST_PARAMS', value: 'param1=value1&param2=value2' },

@@ -19,7 +19,6 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
 		host: request.hostname,
 		path: decodeURIComponent(request.url.split('?')[0]),
 		method: request.method,
-		params: request.params as IFunctionRequestData['params'],
 		query: request.query as IFunctionRequestData['query'],
 		headers: request.headers as IFunctionRequestData['headers'],
 		body: request.body as unknown

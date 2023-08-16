@@ -3,7 +3,7 @@ import { IHeadNodeResponse } from '../interfaces/headNode'
 import { IFunctionEnvVarRecord, IFunctionRequestData } from '../models'
 import { generateCRC32Checksum } from '../utils/checksum'
 import { decryptValue } from '../utils/encryption'
-import { normalize } from '../utils/strings'
+import { convertRequestBodyToString, normalize } from '../utils/strings'
 
 /**
  * A utility function to parse env vars key-value array from a function's env var records
@@ -39,6 +39,31 @@ export function parseFunctionEnvVars(
 export function parseFunctionRequestVars(requestData: IFunctionRequestData): INameValueArray {
 	const requestVars = [] as INameValueArray
 
+	// Look for stdin over request vars
+	let stdin = requestData.path || '/'
+	if (requestData.method === 'GET') {
+		// Look in query
+		if (requestData.query?.stdin) {
+			stdin = requestData.query.stdin
+		}
+	} else if (requestData.body) {
+		// Look in body
+		if (typeof requestData.body === 'object' && 'stdin' in requestData.body) {
+			stdin = String(requestData.body.stdin)
+		} else if (typeof requestData.body === 'string') {
+			stdin = requestData.body
+		} else if (requestData.query?.stdin) {
+			stdin = requestData.query.stdin
+		}
+	}
+
+	if (stdin) {
+		requestVars.push({
+			name: 'BLS_REQUEST_STDIN',
+			value: stdin
+		})
+	}
+
 	requestVars.push({
 		name: 'BLS_REQUEST_METHOD',
 		value: requestData.method || 'GET'
@@ -73,10 +98,7 @@ export function parseFunctionRequestVars(requestData: IFunctionRequestData): INa
 	if (requestData.body) {
 		requestVars.push({
 			name: 'BLS_REQUEST_BODY',
-			value:
-				typeof requestData.body !== 'string'
-					? JSON.stringify(requestData.body)
-					: (requestData.body as string)
+			value: convertRequestBodyToString(requestData.body)
 		})
 	}
 
