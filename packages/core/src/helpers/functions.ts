@@ -98,7 +98,7 @@ export function parseFunctionRequestVars(requestData: IFunctionRequestData): INa
 	if (requestData.body) {
 		requestVars.push({
 			name: 'BLS_REQUEST_BODY',
-			value: convertRequestBodyToString(requestData.body)
+			value: encodeURIComponent(convertRequestBodyToString(requestData.body))
 		})
 	}
 
@@ -123,6 +123,13 @@ export function parseFunctionResponse(data: IHeadNodeResponse) {
 		type = contentType
 		body = base64data
 	} else {
+		try {
+			JSON.parse(data.result)
+			type = 'application/json'
+		} catch {
+			/* empty */
+		}
+
 		body = data.result
 	}
 
