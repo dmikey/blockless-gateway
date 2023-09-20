@@ -16,7 +16,7 @@ import { fetchCache, storeCache } from './headNodeCache'
  */
 export async function callHeadNodeFunction(
 	payload: IHeadNodePayload,
-	retries = 0,
+	retries = 1,
 	headNodeHost: string = HEAD_NODE_HOST
 ): Promise<IHeadNodeResponse> {
 	let i = 0
@@ -27,6 +27,8 @@ export async function callHeadNodeFunction(
 
 			if (response.data.code === '200' || response.data.code === 200) {
 				return response.data
+			} else {
+				throw new Error()
 			}
 		} catch {
 			i++
@@ -90,7 +92,7 @@ export async function invokeCachedHeadNodeFunction(
 ): Promise<IHeadNodeResponse> {
 	const payload = parsePayload(functionId, manifest, envVars)
 	return await fetchCachedHeadNodeFunction(payload, () =>
-		callHeadNodeFunction(payload, 3, headNodeHost)
+		callHeadNodeFunction(payload, 2, headNodeHost)
 	)
 }
 
@@ -108,7 +110,7 @@ export async function invokeHeadNodeFunction(
 	headNodeHost?: string
 ): Promise<IHeadNodeResponse> {
 	const payload = parsePayload(functionId, manifest, envVars)
-	return await callHeadNodeFunction(payload, 3, headNodeHost)
+	return await callHeadNodeFunction(payload, 2, headNodeHost)
 }
 
 /**
