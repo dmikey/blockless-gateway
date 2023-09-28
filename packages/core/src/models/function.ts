@@ -60,6 +60,14 @@ export interface IFunctionRecord extends IDocument {
 	type: string
 
 	envVars: IFunctionEnvVarRecord[]
+	secretManagement: {
+		hashicorp: {
+			clientId: string
+			clientSecret: string
+			iv: string
+		}
+	}
+
 	subdomain: string
 	domainMappings: { domain: string }[]
 
@@ -113,6 +121,13 @@ const FunctionSchema = new mongoose.Schema(
 		},
 
 		envVars: [FunctionEnvVars],
+		secretManagement: {
+			hashicorp: {
+				clientId: String,
+				clientSecret: String,
+				iv: String
+			}
+		},
 
 		subdomain: { type: String, required: true },
 		domainMappings: [FunctionDomainMapping]

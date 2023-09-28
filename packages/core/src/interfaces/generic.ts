@@ -28,3 +28,7 @@ export interface Pagination<Docs> {
 export type KeyValueObject = {
 	[key: string]: string | null
 }
+
+export type SecretManagementKVObject = {
+	hashicorp: KeyValueObject
+}

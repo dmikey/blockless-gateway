@@ -10,7 +10,8 @@ import {
 	getFunction,
 	listFunctions,
 	updateFunction,
-	updateFunctionEnvVars
+	updateFunctionEnvVars,
+	updateFunctionSecrets
 } from './services/functions'
 import { lookupAndInvokeFunction } from './services/invoke'
 
@@ -37,6 +38,7 @@ export class Gateway {
 		get: OmitThisParameter<typeof getFunction>
 		update: OmitThisParameter<typeof updateFunction>
 		updateEnvVars: OmitThisParameter<typeof updateFunctionEnvVars>
+		updateSecrets: OmitThisParameter<typeof updateFunctionSecrets>
 		delete: OmitThisParameter<typeof deleteFunction>
 		deploy: OmitThisParameter<typeof deployFunction>
 		invoke: OmitThisParameter<typeof lookupAndInvokeFunction>
@@ -65,6 +67,7 @@ export class Gateway {
 			get: getFunction.bind(this),
 			update: updateFunction.bind(this),
 			updateEnvVars: updateFunctionEnvVars.bind(this),
+			updateSecrets: updateFunctionSecrets.bind(this),
 			delete: deleteFunction.bind(this),
 			deploy: deployFunction.bind(this),
 			invoke: lookupAndInvokeFunction.bind(this)

@@ -10,6 +10,10 @@ const errorCodesConfig = {
 		statusCode: 404,
 		message: 'Function environment variables not found.'
 	},
+	ERR_FUNCTION_SECRETS_NOT_FOUND: {
+		statusCode: 404,
+		message: 'Function secrets not found.'
+	},
 	ERR_FUNCTION_MANIFEST_INVALID: { statusCode: 400, message: 'Function manifest invalid.' },
 	ERR_FUNCTION_NAME_EXISTS: { statusCode: 400, message: 'Function name already exists.' },
 	ERR_FUNCTION_DEPLOY_FAILED: { statusCode: 400, message: 'Function failed to deploy.' },
