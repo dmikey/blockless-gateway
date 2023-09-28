@@ -58,6 +58,7 @@ export async function lookupAndInvokeFunction(
 				functionId: 1,
 				type: 1,
 				envVars: 1,
+				secretManagement: 1,
 				manifest: '$manifests.manifest'
 			}
 		},

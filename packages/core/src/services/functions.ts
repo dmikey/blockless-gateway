@@ -369,8 +369,8 @@ export async function updateFunctionSecrets(
 
 	// Format Secrets
 	// @TODO: Standardize secrets config
-	if (secrets.hashicorp.clientId && secrets.hashicorp.clientSecret) {
-		const { value, iv } = encryptValue(secrets.hashicorp.clientSecret, process.env.ENV_SECRET!)
+	if (secrets.hashicorp.clientId && secrets.hashicorp.clientSecret && this._encryptionKey) {
+		const { value, iv } = encryptValue(secrets.hashicorp.clientSecret, this._encryptionKey)
 
 		secrets.hashicorp.clientSecret = value
 		secrets.hashicorp.iv = iv

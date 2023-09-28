@@ -95,6 +95,21 @@ describe('Functions Controller', () => {
 		expect(fn.envVars[1].name).toBe('ENV2')
 	})
 
+	it('should add secrets', async () => {
+		const secrets = {
+			hashicorp: {
+				clientId: 'hashicorpClientId',
+				clientSecret: 'hashicorpClientSecret'
+			}
+		}
+
+		const fn = await blsGateway.functions.updateSecrets(FN_TYPE, USER_ADDRESS, fnId, { secrets })
+
+		expect(fn).toHaveProperty('secretManagement')
+		expect(fn.secretManagement.hashicorp).not.toBeNull()
+		expect(fn.secretManagement.hashicorp.clientId).toBe('hashicorpClientId')
+	})
+
 	it('should modify environment variables', async () => {
 		const envVars = {
 			ENV1: null,

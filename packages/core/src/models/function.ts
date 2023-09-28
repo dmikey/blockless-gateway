@@ -126,8 +126,14 @@ const FunctionSchema = new mongoose.Schema(
 		secretManagement: {
 			hashicorp: {
 				clientId: String,
-				clientSecret: String,
-				iv: String
+				clientSecret: {
+					type: String,
+					select: false
+				},
+				iv: {
+					type: String,
+					select: false
+				}
 			}
 		},
 
