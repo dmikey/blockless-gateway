@@ -3,8 +3,10 @@ import { Gateway } from '../gateway'
 import {
 	parseFunctionEnvVars,
 	parseFunctionRequestVars,
-	parseFunctionResponse
+	parseFunctionResponse,
+	parseFunctionSecrets
 } from '../helpers/functions'
+import { INameValueArray } from '../interfaces/generic'
 import { FunctionType, IFunctionRecord, IFunctionRequestData } from '../models/function'
 import Functions from '../models/function'
 import { fetchFunctionManifest } from './functionManifests'
@@ -97,6 +99,12 @@ async function invoke(
 
 	// Prepare request data and environment variables
 	const envVars = parseFunctionEnvVars(fn.envVars, options?.encryptionKey)
+
+	let secretVars = [] as INameValueArray
+	if (options?.encryptionKey) {
+		secretVars = await parseFunctionSecrets(fn.secretManagement, options?.encryptionKey)
+	}
+
 	const requestVars = parseFunctionRequestVars(requestData)
 	const callFn =
 		fn.type === FunctionType.SITE ? invokeCachedHeadNodeFunction : invokeHeadNodeFunction
@@ -105,7 +113,7 @@ async function invoke(
 	const data = await callFn(
 		fn.functionId,
 		manifest!,
-		[...envVars, ...requestVars],
+		[...envVars, ...secretVars, ...requestVars],
 		options?.headNodeHost
 	)
 

@@ -51,6 +51,14 @@ export interface IFunctionEnvVarRecord {
 	iv?: string
 }
 
+export interface IFunctionSecretsRecord {
+	hashicorp: {
+		clientId: string
+		clientSecret: string
+		iv?: string
+	}
+}
+
 export interface IFunctionRecord extends IDocument {
 	userId: string
 	invocationId: string
@@ -60,13 +68,7 @@ export interface IFunctionRecord extends IDocument {
 	type: string
 
 	envVars: IFunctionEnvVarRecord[]
-	secretManagement: {
-		hashicorp: {
-			clientId: string
-			clientSecret: string
-			iv: string
-		}
-	}
+	secretManagement: IFunctionSecretsRecord
 
 	subdomain: string
 	domainMappings: { domain: string }[]
