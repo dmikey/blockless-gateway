@@ -18,15 +18,17 @@ export function parseFunctionEnvVars(
 ): INameValueArray {
 	let envVarsArray = [] as INameValueArray
 
-	envVarsArray = envVars
-		.filter((envVar) => (encryptionKey ? !!envVar.value && !!envVar.iv : !!envVar.value))
-		.map((envVar) => {
-			const value =
-				!!encryptionKey && !!envVar.iv
-					? decryptValue(envVar.value, encryptionKey, envVar.iv)
-					: envVar.value
-			return { name: envVar.name, value }
-		})
+	if (envVars) {
+		envVarsArray = envVars
+			.filter((envVar) => (encryptionKey ? !!envVar.value && !!envVar.iv : !!envVar.value))
+			.map((envVar) => {
+				const value =
+					!!encryptionKey && !!envVar.iv
+						? decryptValue(envVar.value, encryptionKey, envVar.iv)
+						: envVar.value
+				return { name: envVar.name, value }
+			})
+	}
 
 	return envVarsArray
 }
