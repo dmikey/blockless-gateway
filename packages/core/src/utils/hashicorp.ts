@@ -22,8 +22,9 @@ export async function getHCPAuthToken(
 			{ headers }
 		)
 		return response.data.access_token
-	} catch (error) {
-		console.error(error)
+	} catch {
+		/* empty */
 	}
+
 	return null
 }
