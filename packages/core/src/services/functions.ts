@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { BaseErrors } from '../errors'
 import { Gateway } from '../gateway'
 import { generateSubdomain, validateFunctionName } from '../helpers/functions'
-import { KeyValueObject, Pagination } from '../interfaces/generic'
+import { KeyValueObject, Pagination, SecretManagementKVObject } from '../interfaces/generic'
 import { IFunctionRecord } from '../models/function'
 import Functions, { IFunctionModel } from '../models/function'
 import { encryptValue } from '../utils/encryption'
@@ -331,6 +331,54 @@ export async function updateFunctionEnvVars(
 						fn.envVars.push({ name: key, value: envVars[key]! })
 					}
 				}
+			}
+		}
+	}
+
+	// Perform the update
+	await fn.save()
+
+	const updatedFn = await Functions.findById(fn._id)
+	if (!updatedFn) throw new BaseErrors.ERR_FUNCTION_UPDATE_FAILED()
+
+	return updatedFn
+}
+
+/**
+ * Update function secret data
+ */
+export async function updateFunctionSecrets(
+	this: Gateway,
+	type: 'function' | 'site',
+	userId: string,
+	id: string,
+	data: { secrets: SecretManagementKVObject }
+) {
+	const secrets = data.secrets
+	if (!secrets) throw new BaseErrors.ERR_FUNCTION_SECRETS_NOT_FOUND()
+
+	// @TODO: Standardize secrets config
+	if (!secrets.hashicorp) throw new BaseErrors.ERR_FUNCTION_SECRETS_NOT_FOUND()
+
+	const fn = await Functions.findOne({
+		_id: id,
+		userId: { $regex: userId, $options: 'i' },
+		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
+	})
+	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
+
+	// Format Secrets
+	// @TODO: Standardize secrets config
+	if (secrets.hashicorp.clientId && secrets.hashicorp.clientSecret && this._encryptionKey) {
+		const { value, iv } = encryptValue(secrets.hashicorp.clientSecret, this._encryptionKey)
+
+		secrets.hashicorp.clientSecret = value
+		secrets.hashicorp.iv = iv
+		fn.secretManagement = {
+			hashicorp: {
+				clientId: secrets.hashicorp.clientId,
+				clientSecret: value,
+				iv
 			}
 		}
 	}

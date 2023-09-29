@@ -14,7 +14,9 @@ import {
 	FunctionUpdateEnvVarsRequest,
 	FunctionUpdateEnvVarsSchema,
 	FunctionUpdateRequest,
-	FunctionUpdateSchema
+	FunctionUpdateSchema,
+	FunctionUpdateSecretsRequest,
+	FunctionUpdateSecretsSchema
 } from '../schema/function'
 import gatewayClient from '../utils/gatewayClient'
 
@@ -92,6 +94,23 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { envVars } = request.body
 
 			return await gatewayClient.functions.updateEnvVars(type, publicAddress, id, { envVars })
+		}
+	)
+
+	server.patch(
+		'/:id/sercrets',
+		{
+			constraints: { host: REGEX_HOST_MATCH },
+			schema: FunctionUpdateSecretsSchema
+		},
+		async (request: FunctionUpdateSecretsRequest) => {
+			const { id } = request.params
+			const { publicAddress } = request.user
+			const { secrets, secretManagement } = request.body
+
+			return await gatewayClient.functions.updateSecrets(type, publicAddress, id, {
+				secrets: secrets || secretManagement
+			})
 		}
 	)
 

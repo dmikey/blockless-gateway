@@ -27,6 +27,24 @@ export type FunctionUpdateEnvVarsRequest = FastifyRequest<{
 	}
 }>
 
+export type FunctionUpdateSecretsRequest = FastifyRequest<{
+	Params: {
+		id: string
+	}
+	Body: {
+		secrets: {
+			hashicorp: {
+				[key: string]: string | null
+			}
+		}
+		secretManagement: {
+			hashicorp: {
+				[key: string]: string | null
+			}
+		}
+	}
+}>
+
 export type FunctionListRequest = FastifyRequest<{
 	Querystring: {
 		page: number
@@ -101,6 +119,24 @@ export const FunctionUpdateEnvVarsSchema = {
 				type: 'object'
 			}
 		},
+		additionalProperties: false
+	}
+}
+
+export const FunctionUpdateSecretsSchema = {
+	params: { id: { type: 'string', minLength: 1 } },
+	body: {
+		type: 'object',
+		anyOf: [
+			{
+				required: ['secrets'],
+				properties: { secrets: { type: 'object' } }
+			},
+			{
+				required: ['secretManagement'],
+				properties: { secretManagement: { type: 'object' } }
+			}
+		],
 		additionalProperties: false
 	}
 }

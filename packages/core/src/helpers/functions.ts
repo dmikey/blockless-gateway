@@ -1,8 +1,9 @@
 import { INameValueArray } from '../interfaces/generic'
 import { IHeadNodeResponse } from '../interfaces/headNode'
-import { IFunctionEnvVarRecord, IFunctionRequestData } from '../models'
+import { IFunctionEnvVarRecord, IFunctionRequestData, IFunctionSecretsRecord } from '../models'
 import { generateCRC32Checksum } from '../utils/checksum'
 import { decryptValue } from '../utils/encryption'
+import { getHCPAuthToken } from '../utils/hashicorp'
 import { convertRequestBodyToString, normalize } from '../utils/strings'
 
 /**
@@ -28,6 +29,45 @@ export function parseFunctionEnvVars(
 		})
 
 	return envVarsArray
+}
+
+/**
+ * A utility function to parse secrets key value
+ *
+ * @param secrets
+ * @returns
+ */
+export async function parseFunctionSecrets(
+	secrets: IFunctionSecretsRecord,
+	encryptionKey: string
+): Promise<INameValueArray> {
+	const secretVars = [] as INameValueArray
+
+	if (
+		secrets &&
+		secrets.hashicorp &&
+		secrets.hashicorp.clientId &&
+		secrets.hashicorp.clientId.length > 0 &&
+		secrets.hashicorp.clientSecret &&
+		secrets.hashicorp.clientSecret.length > 0 &&
+		secrets.hashicorp.iv &&
+		secrets.hashicorp.iv.length > 0
+	) {
+		const clientId = secrets.hashicorp.clientId
+		const clientSecret = secrets.hashicorp.clientSecret
+
+		const hcpToken = await getHCPAuthToken(
+			clientId,
+			decryptValue(clientSecret, encryptionKey, secrets.hashicorp.iv)
+		)
+
+		secretVars.push({
+			name: 'BLS_HCP_TOKEN',
+			value: hcpToken || ''
+		})
+	}
+
+	return secretVars
 }
 
 /**
