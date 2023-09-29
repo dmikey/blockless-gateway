@@ -1,4 +1,4 @@
-import { BaseErrors } from '../errors'
+import { BaseError, BaseErrors } from '../errors'
 import { Gateway } from '../gateway'
 import {
 	parseFunctionEnvVars,
@@ -10,6 +10,7 @@ import { INameValueArray } from '../interfaces/generic'
 import { FunctionType, IFunctionRecord, IFunctionRequestData } from '../models/function'
 import Functions from '../models/function'
 import { fetchFunctionManifest } from './functionManifests'
+import { addFunctionError, addFunctionRequest } from './functionMetrics'
 import { invokeCachedHeadNodeFunction, invokeHeadNodeFunction } from './headNode'
 
 /**
@@ -72,10 +73,19 @@ export async function lookupAndInvokeFunction(
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_NOT_FOUND()
 	if (!fn.functionId) throw new BaseErrors.ERR_FUNCTION_NOT_DEPLOYED()
 
-	return invoke(fn, requestData, {
-		encryptionKey: this._encryptionKey,
-		headNodeHost: this._headNodeUri
-	})
+	try {
+		addFunctionRequest(fn._id)
+
+		return invoke(fn, requestData, {
+			encryptionKey: this._encryptionKey,
+			headNodeHost: this._headNodeUri
+		})
+	} catch (error: unknown) {
+		const functionError = error as BaseError
+		addFunctionError(fn._id, functionError.statusCode?.toString() || '400', functionError.message)
+
+		throw error
+	}
 }
 
 /**
