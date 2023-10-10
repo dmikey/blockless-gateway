@@ -9,6 +9,7 @@ import gatewayUI from '@blockless/gateway-ui'
 
 import { API_PATH, REGEX_HOST_MATCH } from './constants'
 import { authenticateHook } from './hooks/authenticate'
+import { register as registerAttributes } from './routes/attributes'
 import { register as registerAuth } from './routes/auth'
 import { register as registerFunctions } from './routes/functions'
 import { register as registerInvoke } from './routes/invoke'
@@ -51,6 +52,7 @@ server.register(registerInvoke)
 server.register(registerAuth, { prefix: `${API_PATH}/auth` })
 server.register(registerFunctions, { prefix: `${API_PATH}/functions`, type: 'function' })
 server.register(registerFunctions, { prefix: `${API_PATH}/sites`, type: 'site' })
+server.register(registerAttributes, { prefix: `${API_PATH}/attributes` })
 server.register(registerRegistry, { prefix: `${API_PATH}/registry` })
 
 // Run the server
