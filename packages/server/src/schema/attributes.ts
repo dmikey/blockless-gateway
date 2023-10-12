@@ -11,7 +11,7 @@ export const AttributeCreateIPNSSchema = {
 	body: {
 		type: 'object',
 		required: ['ipnsName', 'ipnsRecord'],
-		properies: {
+		properties: {
 			ipnsName: {
 				type: 'string'
 			},

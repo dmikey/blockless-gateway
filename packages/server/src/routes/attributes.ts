@@ -40,10 +40,9 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request: AttributeCreateIPNSRequest) => {
 			const { ipnsName, ipnsRecord } = request.body
 
-			const result = await createName(ipnsName, ipnsRecord)
-			const id = result['id']
+			const id = await createName(ipnsName, ipnsRecord)
 			if (!id) {
-				throw new Error(result['message'] ? result['message'] : 'IPNS name not created.')
+				throw new Error('IPNS name not created.')
 			}
 
 			return { id }
