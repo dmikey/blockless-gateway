@@ -36,7 +36,8 @@ const errorCodesConfig = {
 	ERR_USER_SIGNATURE_MISMATCH: {
 		statusCode: 401,
 		message: 'User signature does not match.'
-	}
+	},
+	ERR_ATTRIBUTE_FILE_MISSING: { statusCode: 400, message: 'Attribute file missing.' }
 }
 
 export const BaseErrors = createErrorClasses(errorCodesConfig)
