@@ -4,6 +4,7 @@ import { IFunctionRequestData } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH, REGEX_HOST_NOT_MATCH } from '../constants'
 import { InvokePathRequest } from '../schema/invoke'
+import { isUUID } from '../utils'
 import gatewayClient from '../utils/gatewayClient'
 
 /**
@@ -41,7 +42,12 @@ async function invokePathAPI(request: InvokePathRequest, reply: FastifyReply) {
 	const { path } = request.body
 	const requestData = { path }
 
-	const response = await gatewayClient.functions.invoke('invocationId', id, requestData)
+	// Detect type of ID and trigger the relevant invocation
+	const response = await gatewayClient.functions.invoke(
+		isUUID(id) ? 'invocationId' : 'functionId',
+		id,
+		requestData
+	)
 
 	reply.status(response.status).headers(response.headers).type(response.type).send(response.body)
 }
