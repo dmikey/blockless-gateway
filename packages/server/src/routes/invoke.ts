@@ -19,6 +19,7 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
 	const requestData = {
 		host: request.hostname,
 		path: decodeURIComponent(request.url.split('?')[0]),
+		params: request.params as IFunctionRequestData['params'],
 		method: request.method,
 		query: request.query as IFunctionRequestData['query'],
 		headers: request.headers as IFunctionRequestData['headers'],
@@ -39,8 +40,8 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
  */
 async function invokePathAPI(request: InvokePathRequest, reply: FastifyReply) {
 	const { id } = request.params
-	const { path } = request.body
-	const requestData = { path }
+	const { method, path, params, query, headers, body } = request.body
+	const requestData = { method, path, params, query, headers, body }
 
 	// Detect type of ID and trigger the relevant invocation
 	const response = await gatewayClient.functions.invoke(
