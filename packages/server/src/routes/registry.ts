@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify'
-import { File } from 'web3.storage'
 
 import { BaseErrors, IFunctionManifestRecord } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import gatewayClient from '../utils/gatewayClient'
-import storageClient from '../utils/storageClient'
+import { File } from '../utils/helpers'
+import { makeStorageClient } from '../utils/storageClient'
 
 export const register = (server: FastifyInstance, opts: FastifyPluginOptions, next) => {
 	server.get(
@@ -45,15 +45,18 @@ export const register = (server: FastifyInstance, opts: FastifyPluginOptions, ne
 				files.push(new File([buf], part.filename))
 			}
 
+			const storageClient = await makeStorageClient()
+
 			if (!manifest) throw new BaseErrors.ERR_FUNCTION_MANIFEST_NOT_FOUND()
+			if (!storageClient) throw new BaseErrors.ERR_FUNCTION_DEPLOY_FAILED()
 
 			// Store module in web3 storage
-			const cid = await storageClient.put(files)
+			const cid = await storageClient.uploadDirectory(files)
 
 			// Store manifest in db
-			await gatewayClient.functionManifests.store(cid, manifest)
+			await gatewayClient.functionManifests.store(cid.toString(), manifest)
 
-			return { cid, name: manifest.name, manifest }
+			return { cid: cid.toString(), name: manifest.name, manifest }
 		}
 	)
 

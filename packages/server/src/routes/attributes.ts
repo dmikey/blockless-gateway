@@ -1,12 +1,11 @@
 import { FastifyInstance, FastifyRequest } from 'fastify'
-import { File } from 'web3.storage'
 
 import { BaseErrors } from '@blockless/gateway-core'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import { AttributeCreateIPNSRequest, AttributeCreateIPNSSchema } from '../schema/attributes'
 import { createName } from '../utils/nameClient'
-import storageClient from '../utils/storageClient'
+import { makeStorageClient } from '../utils/storageClient'
 
 export const register = (server: FastifyInstance, opts, next) => {
 	server.post(
@@ -25,9 +24,13 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const buf = await f.toBuffer()
 			files.push(new File([buf], 'attributes.bin'))
 
+			const storageClient = await makeStorageClient()
+			if (!storageClient) throw new BaseErrors.ERR_ATTRIBUTE_FILE_MISSING()
+
 			// Store file in web3 storage.
-			const cid = await storageClient.put(files)
-			return { cid }
+			const cid = await storageClient.uploadDirectory(files)
+
+			return { cid: cid.toString() }
 		}
 	)
 
