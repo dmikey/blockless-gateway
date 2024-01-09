@@ -28,7 +28,7 @@ async function invokeHostnameAPI(request: FastifyRequest, reply: FastifyReply) {
 
 	const response = await gatewayClient.functions.invoke('subdomain', domain, requestData)
 
-	reply.status(response.status).headers(response.headers).type(response.type).send(response.body)
+	reply.status(response.status).type(response.type).send(response.body)
 }
 
 /**
@@ -50,7 +50,7 @@ async function invokePathAPI(request: InvokePathRequest, reply: FastifyReply) {
 		requestData
 	)
 
-	reply.status(response.status).headers(response.headers).type(response.type).send(response.body)
+	reply.status(response.status).type(response.type).send(response.body)
 }
 
 export const register = (server: FastifyInstance, opts: FastifyPluginOptions, next) => {
