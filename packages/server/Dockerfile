@@ -41,4 +41,4 @@ COPY --from=builder /app /srv
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 
 # Run the Node.js application and Caddy when the container starts
-CMD ["sh", "-c", "node /srv/build/index.js & caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+CMD ["sh", "-c", "node --experimental-specifier-resolution=node /srv/build/index.js & caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
