@@ -157,22 +157,26 @@ export function parseFunctionResponse(data: IHeadNodeResponse) {
 	let body = null as unknown
 	let type = 'text/html'
 
-	if (data.result.startsWith('data:')) {
-		const bufferData = data.result.split(',')[1]
-		const contentType = data.result.split(',')[0].split(':')[1].split(';')[0]
+	const payload =
+		data.results && data.results.length > 0 ? data.results[0].result : data.result || ''
+	const payloadBody = typeof payload === 'string' ? payload : payload.stdout || payload.stderr
+
+	if (payloadBody.startsWith('data:')) {
+		const bufferData = payloadBody.split(',')[1]
+		const contentType = payloadBody.split(',')[0].split(':')[1].split(';')[0]
 		const base64data = Buffer.from(bufferData, 'base64')
 
 		type = contentType
 		body = base64data
 	} else {
 		try {
-			JSON.parse(data.result)
+			JSON.parse(payloadBody)
 			type = 'application/json'
 		} catch {
 			/* empty */
 		}
 
-		body = data.result
+		body = payloadBody
 	}
 
 	return {

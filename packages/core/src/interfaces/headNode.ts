@@ -15,4 +15,13 @@ export interface IHeadNodePayload {
 
 export interface IHeadNodeResponse {
 	result: string
+	results: {
+		result: {
+			stdout: string
+			stderr: string
+			exit_code: number
+		}
+		peerds: string[]
+		frequency: number
+	}[]
 }
