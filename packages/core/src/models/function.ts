@@ -43,6 +43,12 @@ export interface IFunctionManifestRecord {
 	entry: string
 	contentType: string
 	permissions: string[]
+	modules: {
+		file: string
+		name: string
+		type: string
+		md5: string
+	}[]
 }
 
 export interface IFunctionEnvVarRecord {

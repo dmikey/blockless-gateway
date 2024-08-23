@@ -129,10 +129,11 @@ function parsePayload(
 	const stdin = envVars.find((e) => e.name === 'BLS_REQUEST_STDIN')
 	return {
 		function_id: functionId,
-		method: manifest.entry,
+		method:
+			manifest.modules && manifest.modules.length > 0 ? manifest.modules[0].file : manifest.entry,
 		parameters: null,
 		config: {
-			permissions: [...manifest.permissions],
+			permissions: manifest.permissions ? [...manifest.permissions] : [],
 			env_vars: [...envVars],
 			stdin: stdin ? stdin.value : '',
 			number_of_nodes: 1
