@@ -1,6 +1,6 @@
 {
 	"name": "@blockless/gateway-server",
-	"version": "0.0.22",
+	"version": "0.0.24",
 	"main": "build/index.js",
 	"license": "Apache-2.0",
 	"type": "module",

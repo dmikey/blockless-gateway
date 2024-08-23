@@ -1,6 +1,6 @@
 {
 	"name": "@blockless/gateway-ui",
-	"version": "0.0.21",
+	"version": "0.0.24",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
