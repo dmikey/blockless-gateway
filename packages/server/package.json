@@ -8,7 +8,7 @@
 		"build": "rimraf build && tsc",
 		"start": "node --experimental-specifier-resolution=node build/index.js",
 		"dev:caddy": "docker run --rm --name gateway-server -v $PWD/Caddyfile.local:/etc/caddy/Caddyfile -p 80:80 -p 443:443 --network host --env-file .env caddy:latest",
-		"dev": "ts-node --esm --experimental-specifier-resolution=node src/index.ts",
+		"dev": "tsx src/index.ts",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
@@ -31,6 +31,7 @@
 		"nodemon": "^3.0.1",
 		"rimraf": "^5.0.1",
 		"ts-node": "^10.9.1",
+		"tsx": "^4.19.1",
 		"typescript": "^5.1.6"
 	}
 }

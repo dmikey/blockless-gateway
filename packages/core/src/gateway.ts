@@ -14,6 +14,14 @@ import {
 	updateFunctionSecrets
 } from './services/functions'
 import { lookupAndInvokeFunction } from './services/invoke'
+import {
+	endPublicNodeSession,
+	getUserNode,
+	linkUserNode,
+	listUserNodes,
+	registerPublicNode,
+	startPublicNodeSession
+} from './services/node'
 
 interface GatewayOptions {
 	mongoUri: string
@@ -49,6 +57,15 @@ export class Gateway {
 		store: OmitThisParameter<typeof storeFunctionManifest>
 	}
 
+	nodes: {
+		list: OmitThisParameter<typeof listUserNodes>
+		get: OmitThisParameter<typeof getUserNode>
+		link: OmitThisParameter<typeof linkUserNode>
+		register: OmitThisParameter<typeof registerPublicNode>
+		startSession: OmitThisParameter<typeof startPublicNodeSession>
+		endSession: OmitThisParameter<typeof endPublicNodeSession>
+	}
+
 	constructor(options: GatewayOptions) {
 		this._mongoUri = options.mongoUri
 		this._headNodeUri = options.headNodeUri
@@ -82,6 +99,15 @@ export class Gateway {
 			getUser: getUser.bind(this),
 			getChallenge: generateUserChallenge.bind(this),
 			verifySignature: verifyUserWalletSignature.bind(this)
+		}
+
+		this.nodes = {
+			list: listUserNodes.bind(this),
+			get: getUserNode.bind(this),
+			link: linkUserNode.bind(this),
+			register: registerPublicNode.bind(this),
+			startSession: startPublicNodeSession.bind(this),
+			endSession: endPublicNodeSession.bind(this)
 		}
 	}
 

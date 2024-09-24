@@ -13,6 +13,7 @@ import { register as registerAttributes } from './routes/attributes'
 import { register as registerAuth } from './routes/auth'
 import { register as registerFunctions } from './routes/functions'
 import { register as registerInvoke } from './routes/invoke'
+import { register as registerNodes } from './routes/nodes'
 import { register as registerRegistry } from './routes/registry'
 import { EnvSchema } from './schema/env'
 
@@ -54,6 +55,7 @@ server.register(registerFunctions, { prefix: `${API_PATH}/functions`, type: 'fun
 server.register(registerFunctions, { prefix: `${API_PATH}/sites`, type: 'site' })
 server.register(registerAttributes, { prefix: `${API_PATH}/attributes` })
 server.register(registerRegistry, { prefix: `${API_PATH}/registry` })
+server.register(registerNodes, { prefix: `${API_PATH}/nodes` })
 
 // Run the server
 server.listen(
