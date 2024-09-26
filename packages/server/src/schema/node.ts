@@ -7,7 +7,7 @@ export type NodeListRequest = FastifyRequest<{
 	}
 }>
 
-export type NodeCreateRequest = FastifyRequest<{
+export type NodeGetRequest = FastifyRequest<{
 	Params: {
 		nodeId: string
 	}
@@ -22,27 +22,27 @@ export type NodeLinkRequest = FastifyRequest<{
 	}
 }>
 
+export type NodePublicRequest = FastifyRequest<{
+	Params: {
+		nodePubKey: string
+	}
+}>
+
 export type NodeRegisterRequest = FastifyRequest<{
-	Body: {
-		pubKey: string
+	Params: {
+		nodePubKey: string
 	}
 }>
 
 export type NodeStartSessionRequest = FastifyRequest<{
 	Params: {
-		nodeId: string
-	}
-	Body: {
-		signature: string
+		nodePubKey: string
 	}
 }>
 
 export type NodeEndSessionRequest = FastifyRequest<{
 	Params: {
-		nodeId: string
+		nodePubKey: string
 		sessionId: string
-	}
-	Body: {
-		signature: string
 	}
 }>

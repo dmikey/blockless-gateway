@@ -2,10 +2,11 @@ import { FastifyInstance } from 'fastify'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import {
-	NodeCreateRequest,
 	NodeEndSessionRequest,
+	NodeGetRequest,
 	NodeLinkRequest,
 	NodeListRequest,
+	NodePublicRequest,
 	NodeRegisterRequest,
 	NodeStartSessionRequest
 } from '../schema/node'
@@ -30,7 +31,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 		{
 			constraints: { host: REGEX_HOST_MATCH }
 		},
-		async (request: NodeCreateRequest) => {
+		async (request: NodeGetRequest) => {
 			const { publicAddress } = request.user
 			const { nodeId } = request.params
 			return gatewayClient.nodes.get(publicAddress, nodeId)
@@ -50,38 +51,59 @@ export const register = (server: FastifyInstance, opts, next) => {
 		}
 	)
 
+	next()
+}
+
+export const registerPublicNodes = (server: FastifyInstance, opts, next) => {
 	server.post(
-		'/register',
+		'/:nodePubKey',
 		{
-			constraints: { host: REGEX_HOST_MATCH }
+			constraints: { host: REGEX_HOST_MATCH },
+			onRequest: [server.authenticateNode]
 		},
 		async (request: NodeRegisterRequest) => {
-			return gatewayClient.nodes.register(request.body)
+			const { nodePubKey } = request.params
+			return gatewayClient.nodes.register(nodePubKey, {})
 		}
 	)
 
 	server.post(
-		'/:nodeId/sessions',
+		'/:nodePubKey/sessions',
 		{
-			constraints: { host: REGEX_HOST_MATCH }
+			constraints: { host: REGEX_HOST_MATCH },
+			onRequest: [server.authenticateNode]
 		},
 		async (request: NodeStartSessionRequest) => {
-			const { nodeId } = request.params
-			const { signature } = request.body
-			return gatewayClient.nodes.startSession(nodeId, signature)
+			const { nodePubKey } = request.params
+			return gatewayClient.nodes.startSession(nodePubKey)
 		}
 	)
 
 	server.delete(
-		'/:nodeId/sessions/:sessionId',
+		'/:nodePubKey/sessions/:sessionId',
+		{
+			constraints: { host: REGEX_HOST_MATCH },
+			onRequest: [server.authenticateNode]
+		},
+		async (request: NodeEndSessionRequest) => {
+			const { nodePubKey } = request.params
+			return gatewayClient.nodes.endSession(nodePubKey)
+		}
+	)
+
+	server.get(
+		'/:nodePubKey/auth-nonce',
 		{
 			constraints: { host: REGEX_HOST_MATCH }
 		},
-		async (request: NodeEndSessionRequest) => {
-			const { nodeId, sessionId } = request.params
-			const { signature } = request.body
-			return gatewayClient.nodes.endSession(nodeId, sessionId, signature)
+		async (request: NodePublicRequest) => {
+			const { nodePubKey } = request.params
+
+			const nonce = await gatewayClient.nodes.getNonce(process.env.JWT_SECRET!, nodePubKey)
+
+			return { nonce }
 		}
 	)
+
 	next()
 }

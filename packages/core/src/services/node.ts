@@ -1,3 +1,5 @@
+import { createHash } from 'crypto'
+
 import Nodes, { INodeModel } from '../models/node'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
 
@@ -63,6 +65,7 @@ export async function getUserNode(userId: string, nodeId: string): Promise<INode
 }
 
 /**
+ * Link a node with a user id
  *
  * @param userId
  * @param nodeId
@@ -75,16 +78,11 @@ export async function linkUserNode(
 	signature: string
 ): Promise<INodeModel | null> {
 	try {
-		const isValid = await verifySignature(nodeId, signature)
-
-		if (!isValid) {
-			throw new Error('Invalid signature')
-		}
-
 		// Link a node with a user id
 		const node = await Nodes.findByIdAndUpdate(nodeId, { userId }, { new: true })
 
-		if (!node) {
+		// TODO: verify signature with the user wallet address
+		if (!node || !signature) {
 			throw new Error('Failed to link node')
 		}
 
@@ -100,16 +98,20 @@ export async function linkUserNode(
  * @param data
  * @returns
  */
-export async function registerPublicNode(data: Partial<INodeModel>): Promise<INodeModel> {
+export async function registerPublicNode(
+	nodePubKey: string,
+	data: Partial<INodeModel>
+): Promise<INodeModel> {
 	try {
-		// Create a node with a pubkey and data, without user id
-		const { pubKey, ...nodeData } = data
-
-		if (!pubKey) {
+		if (!nodePubKey) {
 			throw new Error('Public key is required to register a node')
 		}
 
-		const node = await Nodes.create({ pubKey, ...nodeData })
+		const node = await Nodes.findOneAndUpdate(
+			{ pubKey: nodePubKey },
+			{ ...data },
+			{ upsert: true, new: true, setDefaultsOnInsert: true }
+		)
 
 		return node
 	} catch (error) {
@@ -120,28 +122,25 @@ export async function registerPublicNode(data: Partial<INodeModel>): Promise<INo
 /**
  * Start a public node session
  *
- * @param nodeId
- * @param signature
+ * @param nodePubKey
  * @returns
  */
-export async function startPublicNodeSession(
-	nodeId: string,
-	signature: string
-): Promise<INodeSessionModel> {
+export async function startPublicNodeSession(nodePubKey: string): Promise<INodeSessionModel> {
 	try {
-		const isValid = await verifySignature(nodeId, signature)
-
-		if (!isValid) {
-			throw new Error('Invalid signature')
-		}
-
-		const node = await Nodes.findById(nodeId)
+		const node = await Nodes.findOne({ pubKey: nodePubKey })
 
 		if (!node) {
 			throw new Error('Node not found')
 		}
 
-		const session = await NodeSessions.create({ nodeId })
+		// End all previous sessions for this node
+		await NodeSessions.updateMany(
+			{ pubKey: nodePubKey, endAt: { $exists: false } },
+			{ endAt: new Date() }
+		)
+
+		// Create a new session
+		const session = await NodeSessions.create({ pubKey: node.pubKey, startAt: new Date() })
 
 		return session
 	} catch (error) {
@@ -152,27 +151,15 @@ export async function startPublicNodeSession(
 /**
  * End a public node session
  *
- * @param nodeId
- * @param sessionId
- * @param signature
+ * @param nodePubKey
  * @returns
  */
-export async function endPublicNodeSession(
-	nodeId: string,
-	sessionId: string,
-	signature: string
-): Promise<INodeSessionModel | null> {
+export async function endPublicNodeSession(nodePubKey: string): Promise<INodeSessionModel | null> {
 	try {
-		const isValid = await verifySignature(nodeId, signature)
-
-		if (!isValid) {
-			throw new Error('Invalid signature')
-		}
-
-		const session = await NodeSessions.findByIdAndUpdate(
+		const session = await NodeSessions.findOneAndUpdate(
 			{
-				_id: sessionId,
-				nodeId
+				pubKey: nodePubKey,
+				endAt: { $exists: false }
 			},
 			{ endAt: new Date() },
 			{ new: true }
@@ -184,20 +171,22 @@ export async function endPublicNodeSession(
 	}
 }
 
-// Helper functions
-
 /**
- * Verify a signature
+ * Get a node nonce
  *
- * @param pubKey
- * @param signature
+ * @param nodePubKey
  * @returns
  */
-export async function verifySignature(pubKey: string, signature: string): Promise<boolean> {
+export async function getPublicNodeNonce(nodePubKey: string, secret: string): Promise<string> {
 	try {
-		const isValid = pubKey !== signature
-		return isValid
+		const currentMinute = Math.floor(Date.now() / 60000)
+
+		const nonce = createHash('sha256')
+			.update(secret + nodePubKey + currentMinute.toString())
+			.digest('hex')
+
+		return nonce
 	} catch (error) {
-		return false
+		throw new Error('Failed to get node nonce')
 	}
 }

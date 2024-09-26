@@ -16,6 +16,7 @@ import {
 import { lookupAndInvokeFunction } from './services/invoke'
 import {
 	endPublicNodeSession,
+	getPublicNodeNonce,
 	getUserNode,
 	linkUserNode,
 	listUserNodes,
@@ -64,6 +65,7 @@ export class Gateway {
 		register: OmitThisParameter<typeof registerPublicNode>
 		startSession: OmitThisParameter<typeof startPublicNodeSession>
 		endSession: OmitThisParameter<typeof endPublicNodeSession>
+		getNonce: OmitThisParameter<typeof getPublicNodeNonce>
 	}
 
 	constructor(options: GatewayOptions) {
@@ -107,7 +109,8 @@ export class Gateway {
 			link: linkUserNode.bind(this),
 			register: registerPublicNode.bind(this),
 			startSession: startPublicNodeSession.bind(this),
-			endSession: endPublicNodeSession.bind(this)
+			endSession: endPublicNodeSession.bind(this),
+			getNonce: getPublicNodeNonce.bind(this)
 		}
 	}
 
