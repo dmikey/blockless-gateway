@@ -9,13 +9,13 @@ export type NodeListRequest = FastifyRequest<{
 
 export type NodeGetRequest = FastifyRequest<{
 	Params: {
-		nodeId: string
+		nodePubKey: string
 	}
 }>
 
 export type NodeLinkRequest = FastifyRequest<{
 	Params: {
-		nodeId: string
+		nodePubKey: string
 	}
 	Body: {
 		signature: string

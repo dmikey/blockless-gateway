@@ -44,13 +44,13 @@ export async function listUserNodes(
  * Get a node for a user
  *
  * @param userId
- * @param nodeId
+ * @param nodePubKey
  * @returns
  */
-export async function getUserNode(userId: string, nodeId: string): Promise<INodeModel | null> {
+export async function getUserNode(userId: string, nodePubKey: string): Promise<INodeModel | null> {
 	try {
-		const node = await Nodes.findById({
-			_id: nodeId,
+		const node = await Nodes.findOne({
+			pubKey: nodePubKey,
 			userId: { $regex: userId, $options: 'i' }
 		}).populate('sessions')
 
@@ -68,18 +68,18 @@ export async function getUserNode(userId: string, nodeId: string): Promise<INode
  * Link a node with a user id
  *
  * @param userId
- * @param nodeId
+ * @param nodePubKey
  * @param signature
  * @returns
  */
 export async function linkUserNode(
 	userId: string,
-	nodeId: string,
+	nodePubKey: string,
 	signature: string
 ): Promise<INodeModel | null> {
 	try {
 		// Link a node with a user id
-		const node = await Nodes.findByIdAndUpdate(nodeId, { userId }, { new: true })
+		const node = await Nodes.findOneAndUpdate({ pubKey: nodePubKey }, { userId }, { new: true })
 
 		// TODO: verify signature with the user wallet address
 		if (!node || !signature) {
@@ -120,6 +120,26 @@ export async function registerPublicNode(
 }
 
 /**
+ * Get a public node
+ *
+ * @param nodePubKey
+ * @returns
+ */
+export async function getPublicNode(nodePubKey: string): Promise<INodeModel | null> {
+	try {
+		const node = await Nodes.findOne({ pubKey: nodePubKey })
+
+		if (!node) {
+			throw new Error('Node not found')
+		}
+
+		return node
+	} catch (error) {
+		throw new Error('Failed to get node')
+	}
+}
+
+/**
  * Start a public node session
  *
  * @param nodePubKey
@@ -135,15 +155,16 @@ export async function startPublicNodeSession(nodePubKey: string): Promise<INodeS
 
 		// End all previous sessions for this node
 		await NodeSessions.updateMany(
-			{ pubKey: nodePubKey, endAt: { $exists: false } },
+			{ nodeId: node._id, endAt: { $exists: false } },
 			{ endAt: new Date() }
 		)
 
 		// Create a new session
-		const session = await NodeSessions.create({ pubKey: node.pubKey, startAt: new Date() })
+		const session = await NodeSessions.create({ nodeId: node._id, startAt: new Date() })
 
 		return session
 	} catch (error) {
+		console.error(error)
 		throw new Error('Failed to start node session')
 	}
 }
@@ -156,9 +177,15 @@ export async function startPublicNodeSession(nodePubKey: string): Promise<INodeS
  */
 export async function endPublicNodeSession(nodePubKey: string): Promise<INodeSessionModel | null> {
 	try {
+		const node = await Nodes.findOne({ pubKey: nodePubKey })
+
+		if (!node) {
+			throw new Error('Node not found')
+		}
+
 		const session = await NodeSessions.findOneAndUpdate(
 			{
-				pubKey: nodePubKey,
+				nodeId: node._id,
 				endAt: { $exists: false }
 			},
 			{ endAt: new Date() },
@@ -167,6 +194,7 @@ export async function endPublicNodeSession(nodePubKey: string): Promise<INodeSes
 
 		return session
 	} catch (error) {
+		console.error(error)
 		throw new Error('Failed to end node session')
 	}
 }

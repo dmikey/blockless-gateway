@@ -1,3 +1,4 @@
+import fastifyCors from '@fastify/cors'
 import fastifyEnv from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
@@ -41,6 +42,9 @@ server.get('/health', async () => {
 server.register(fastifyEnv, { schema: EnvSchema })
 server.register(fastifyJwt, { secret: process.env.JWT_SECRET! })
 server.register(fastifyMultipart)
+server.register(fastifyCors, {
+	origin: '*'
+})
 
 // UI
 server.register(gatewayUI, { hostConstraint: REGEX_HOST_MATCH, pages: ['login', '404'] })

@@ -27,27 +27,28 @@ export const register = (server: FastifyInstance, opts, next) => {
 	)
 
 	server.get(
-		'/:nodeId',
+		'/:nodePubKey',
 		{
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeGetRequest) => {
 			const { publicAddress } = request.user
-			const { nodeId } = request.params
-			return gatewayClient.nodes.get(publicAddress, nodeId)
+			const { nodePubKey } = request.params
+			return gatewayClient.nodes.get(publicAddress, nodePubKey)
 		}
 	)
 
 	server.post(
-		'/:nodeId/link',
+		'/:nodePubKey/link',
 		{
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeLinkRequest) => {
 			const { publicAddress } = request.user
-			const { nodeId } = request.params
+			const { nodePubKey } = request.params
 			const { signature } = request.body
-			return gatewayClient.nodes.link(publicAddress, nodeId, signature)
+
+			return gatewayClient.nodes.link(publicAddress, nodePubKey, signature)
 		}
 	)
 
@@ -63,31 +64,43 @@ export const registerPublicNodes = (server: FastifyInstance, opts, next) => {
 		},
 		async (request: NodeRegisterRequest) => {
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.register(nodePubKey, {})
+			return gatewayClient.publicNodes.register(nodePubKey, {})
+		}
+	)
+
+	server.get(
+		'/:nodePubKey',
+		{
+			constraints: { host: REGEX_HOST_MATCH },
+			onRequest: [server.authenticateNode]
+		},
+		async (request: NodePublicRequest) => {
+			const { nodePubKey } = request.params
+			return gatewayClient.publicNodes.get(nodePubKey)
 		}
 	)
 
 	server.post(
-		'/:nodePubKey/sessions',
+		'/:nodePubKey/start-session',
 		{
 			constraints: { host: REGEX_HOST_MATCH },
 			onRequest: [server.authenticateNode]
 		},
 		async (request: NodeStartSessionRequest) => {
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.startSession(nodePubKey)
+			return gatewayClient.publicNodes.startSession(nodePubKey)
 		}
 	)
 
-	server.delete(
-		'/:nodePubKey/sessions/:sessionId',
+	server.post(
+		'/:nodePubKey/stop-session',
 		{
 			constraints: { host: REGEX_HOST_MATCH },
 			onRequest: [server.authenticateNode]
 		},
 		async (request: NodeEndSessionRequest) => {
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.endSession(nodePubKey)
+			return gatewayClient.publicNodes.endSession(nodePubKey)
 		}
 	)
 
@@ -99,7 +112,7 @@ export const registerPublicNodes = (server: FastifyInstance, opts, next) => {
 		async (request: NodePublicRequest) => {
 			const { nodePubKey } = request.params
 
-			const nonce = await gatewayClient.nodes.getNonce(process.env.JWT_SECRET!, nodePubKey)
+			const nonce = await gatewayClient.publicNodes.getNonce(process.env.JWT_SECRET!, nodePubKey)
 
 			return { nonce }
 		}

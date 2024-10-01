@@ -41,7 +41,7 @@ export function authenticateNodeHook(server: FastifyInstance, opts, next) {
 			const nodePubKey = request.params.nodePubKey
 			const nodeSignature = request.headers['x-node-signature']
 
-			const nonce = await gatewayClient.nodes.getNonce(process.env.JWT_SECRET!, nodePubKey)
+			const nonce = await gatewayClient.publicNodes.getNonce(process.env.JWT_SECRET!, nodePubKey)
 
 			// TODO: verify signature with the public key
 

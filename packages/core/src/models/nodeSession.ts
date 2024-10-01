@@ -11,7 +11,7 @@ const NodeSessionSchema = new mongoose.Schema(
 	{
 		nodeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Node', required: true },
 		startAt: { type: Date, required: true },
-		endAt: { type: Date, required: true }
+		endAt: { type: Date }
 	},
 	{
 		timestamps: true
