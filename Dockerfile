@@ -10,10 +10,10 @@ COPY package.json ./
 # Stage 1: Copy the rest of the application source code
 COPY packages ./packages
 
-RUN yarn install
+RUN npm install
 
 # Stage 1: Build the Node.js application
-RUN cd packages/server && yarn build
+RUN cd packages/server && npm run build
 
 # Stage 2: Build the Caddy image
 FROM caddy:2.7-builder AS caddy

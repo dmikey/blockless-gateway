@@ -4,7 +4,9 @@
 	"version": "1.0.0",
 	"license": "Apache-2.0",
 	"workspaces": [
-		"packages/*"
+		"packages/server",
+		"packages/core",
+		"packages/ui"
 	],
 	"scripts": {
 		"prepare": "husky install",
