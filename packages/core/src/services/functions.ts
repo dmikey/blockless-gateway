@@ -155,7 +155,7 @@ export async function listFunctions(
 				hasNextPage: false,
 				prevPage: null,
 				nextPage: null
-		  }
+			}
 }
 
 /**
