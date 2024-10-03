@@ -10,6 +10,7 @@
 	],
 	"scripts": {
 		"prepare": "husky install",
+		"build": "npm run build:core && npm run build:ui && npm run build:server",
 		"build:core": "npm run build --workspace=packages/core",
 		"build:server": "npm run build --workspace=packages/server",
 		"build:ui": "npm run build --workspace=packages/ui",

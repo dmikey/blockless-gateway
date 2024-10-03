@@ -10,10 +10,11 @@ COPY package.json package-lock.json ./
 # Stage 1: Copy the rest of the application source code
 COPY packages ./packages
 
+# Stage 1: Install dependencies
 RUN npm ci
 
 # Stage 1: Build the Node.js application
-RUN cd packages/server && npm run build
+RUN npm run build
 
 # Stage 2: Build the Caddy image
 FROM caddy:2.7-builder AS caddy

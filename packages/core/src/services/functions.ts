@@ -404,15 +404,13 @@ export async function deleteFunction(
 	type: 'function' | 'site',
 	userId: string,
 	id: string
-): Promise<IFunctionModel> {
+): Promise<void> {
 	const fn = await Functions.findOneAndDelete({
 		_id: id,
 		userId: { $regex: userId, $options: 'i' },
 		$or: type === 'site' ? [{ type: 'site' }] : [{ type: 'function' }, { type: null }]
 	})
 	if (!fn) throw new BaseErrors.ERR_FUNCTION_DELETE_FAILED()
-
-	return fn
 }
 
 /**
