@@ -10,9 +10,9 @@
 	],
 	"scripts": {
 		"prepare": "husky install",
-		"build:core": "yarn workspace @blockless/gateway-core build",
-		"build:server": "yarn workspace @blockless/gateway-server build",
-		"build:ui": "yarn workspace @blockless/gateway-ui build",
+		"build:core": "npm run build --workspace=packages/core",
+		"build:server": "npm run build --workspace=packages/server",
+		"build:ui": "npm run build --workspace=packages/ui",
 		"lint": "eslint .",
 		"lint:fix": "eslint --fix .",
 		"format": "prettier --check .",
