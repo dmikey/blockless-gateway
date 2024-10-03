@@ -93,12 +93,13 @@ export async function linkUserNode(
 }
 
 /**
- * Register a public node
+ * Register a node
  *
  * @param data
  * @returns
  */
-export async function registerPublicNode(
+export async function registerNode(
+	userId: string,
 	nodePubKey: string,
 	data: Partial<INodeModel>
 ): Promise<INodeModel> {
@@ -108,8 +109,8 @@ export async function registerPublicNode(
 		}
 
 		const node = await Nodes.findOneAndUpdate(
-			{ pubKey: nodePubKey },
-			{ ...data },
+			{ pubKey: nodePubKey, userId: { $regex: userId, $options: 'i' } },
+			{ ...data, userId },
 			{ upsert: true, new: true, setDefaultsOnInsert: true }
 		)
 
@@ -120,34 +121,21 @@ export async function registerPublicNode(
 }
 
 /**
- * Get a public node
+ * Start a node session
  *
+ * @param userId
  * @param nodePubKey
  * @returns
  */
-export async function getPublicNode(nodePubKey: string): Promise<INodeModel | null> {
+export async function startNodeSession(
+	userId: string,
+	nodePubKey: string
+): Promise<INodeSessionModel> {
 	try {
-		const node = await Nodes.findOne({ pubKey: nodePubKey })
-
-		if (!node) {
-			throw new Error('Node not found')
-		}
-
-		return node
-	} catch (error) {
-		throw new Error('Failed to get node')
-	}
-}
-
-/**
- * Start a public node session
- *
- * @param nodePubKey
- * @returns
- */
-export async function startPublicNodeSession(nodePubKey: string): Promise<INodeSessionModel> {
-	try {
-		const node = await Nodes.findOne({ pubKey: nodePubKey })
+		const node = await Nodes.findOne({
+			pubKey: nodePubKey,
+			userId: { $regex: userId, $options: 'i' }
+		})
 
 		if (!node) {
 			throw new Error('Node not found')
@@ -170,14 +158,21 @@ export async function startPublicNodeSession(nodePubKey: string): Promise<INodeS
 }
 
 /**
- * End a public node session
+ * End a node session
  *
+ * @param userId
  * @param nodePubKey
  * @returns
  */
-export async function endPublicNodeSession(nodePubKey: string): Promise<INodeSessionModel | null> {
+export async function endNodeSession(
+	userId: string,
+	nodePubKey: string
+): Promise<INodeSessionModel | null> {
 	try {
-		const node = await Nodes.findOne({ pubKey: nodePubKey })
+		const node = await Nodes.findOne({
+			pubKey: nodePubKey,
+			userId: { $regex: userId, $options: 'i' }
+		})
 
 		if (!node) {
 			throw new Error('Node not found')

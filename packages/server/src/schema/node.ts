@@ -13,21 +13,6 @@ export type NodeGetRequest = FastifyRequest<{
 	}
 }>
 
-export type NodeLinkRequest = FastifyRequest<{
-	Params: {
-		nodePubKey: string
-	}
-	Body: {
-		signature: string
-	}
-}>
-
-export type NodePublicRequest = FastifyRequest<{
-	Params: {
-		nodePubKey: string
-	}
-}>
-
 export type NodeRegisterRequest = FastifyRequest<{
 	Params: {
 		nodePubKey: string

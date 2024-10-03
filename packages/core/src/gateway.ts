@@ -15,14 +15,12 @@ import {
 } from './services/functions'
 import { lookupAndInvokeFunction } from './services/invoke'
 import {
-	endPublicNodeSession,
-	getPublicNode,
-	getPublicNodeNonce,
+	endNodeSession,
 	getUserNode,
 	linkUserNode,
 	listUserNodes,
-	registerPublicNode,
-	startPublicNodeSession
+	registerNode,
+	startNodeSession
 } from './services/node'
 
 interface GatewayOptions {
@@ -63,14 +61,9 @@ export class Gateway {
 		list: OmitThisParameter<typeof listUserNodes>
 		get: OmitThisParameter<typeof getUserNode>
 		link: OmitThisParameter<typeof linkUserNode>
-	}
-
-	publicNodes: {
-		register: OmitThisParameter<typeof registerPublicNode>
-		get: OmitThisParameter<typeof getPublicNode>
-		startSession: OmitThisParameter<typeof startPublicNodeSession>
-		endSession: OmitThisParameter<typeof endPublicNodeSession>
-		getNonce: OmitThisParameter<typeof getPublicNodeNonce>
+		register: OmitThisParameter<typeof registerNode>
+		startSession: OmitThisParameter<typeof startNodeSession>
+		endSession: OmitThisParameter<typeof endNodeSession>
 	}
 
 	constructor(options: GatewayOptions) {
@@ -111,15 +104,10 @@ export class Gateway {
 		this.nodes = {
 			list: listUserNodes.bind(this),
 			get: getUserNode.bind(this),
-			link: linkUserNode.bind(this)
-		}
-
-		this.publicNodes = {
-			register: registerPublicNode.bind(this),
-			get: getPublicNode.bind(this),
-			startSession: startPublicNodeSession.bind(this),
-			endSession: endPublicNodeSession.bind(this),
-			getNonce: getPublicNodeNonce.bind(this)
+			link: linkUserNode.bind(this),
+			register: registerNode.bind(this),
+			startSession: startNodeSession.bind(this),
+			endSession: endNodeSession.bind(this)
 		}
 	}
 
