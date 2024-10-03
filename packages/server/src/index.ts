@@ -9,7 +9,7 @@ import fastifyPlugin from 'fastify-plugin'
 import gatewayUI from '@blockless/gateway-ui'
 
 import { API_PATH, REGEX_HOST_MATCH } from './constants'
-import { authenticateHook, authenticateNodeHook } from './hooks/authenticate'
+import { authenticateHook } from './hooks/authenticate'
 import { register as registerAttributes } from './routes/attributes'
 import { register as registerAuth } from './routes/auth'
 import { register as registerFunctions } from './routes/functions'
@@ -51,7 +51,6 @@ server.register(gatewayUI, { hostConstraint: REGEX_HOST_MATCH, pages: ['login', 
 
 // Hooks
 server.register(fastifyPlugin(authenticateHook))
-server.register(fastifyPlugin(authenticateNodeHook))
 
 // Register API Routes
 server.register(registerInvoke)
