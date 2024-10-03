@@ -5,17 +5,14 @@ FROM node:18 AS builder
 WORKDIR /app
 
 # Stage 1: Copy the package.json and lock files to the container
-COPY package.json yarn.lock ./
-COPY packages/server/package.json ./packages/server/
-COPY packages/core/package.json ./packages/core/
-COPY packages/ui/package.json ./packages/ui/
+COPY package.json ./
+
+# Stage 1: Copy the rest of the application source code
+COPY packages ./packages
 
 RUN yarn install
 
-# Stage 1: Copy the rest of the application source code
-COPY . .
-
-# Stage 1: Build the Node.js application (adjust this based on your project setup)
+# Stage 1: Build the Node.js application
 RUN cd packages/server && yarn build
 
 # Stage 2: Build the Caddy image
