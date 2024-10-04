@@ -52,7 +52,7 @@ export async function getUserNode(userId: string, nodePubKey: string): Promise<I
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
 			userId: { $regex: userId, $options: 'i' }
-		}).populate('sessions')
+		})
 
 		if (!node) {
 			throw new Error('Node not found')
