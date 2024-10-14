@@ -35,20 +35,26 @@ export async function getUser(userWallet: UserWallet) {
  * @param walletAddress
  * @returns
  */
-export async function generateUserChallenge({
-	walletKey,
-	walletAddress
-}: UserWallet): Promise<string> {
+export async function generateUserChallenge(
+	{ walletKey, walletAddress }: UserWallet,
+	data: { refBy?: string }
+): Promise<string> {
 	const nonce = crypto.randomBytes(16).toString('base64')
 
 	const userLookupQuery: { [key: string]: unknown } = {}
 	const userData: { [key: string]: string } = {}
+	const userRefData: { [key: string]: string } = {}
 	userLookupQuery[walletKey] = { $regex: new RegExp(walletAddress, 'i') }
 	userData[walletKey] = walletAddress
 
+	const userExists = await User.findOne(userLookupQuery)
+	if (!userExists && data && data.refBy) {
+		userRefData.refBy = data.refBy
+	}
+
 	const user = await User.findOneAndUpdate(
 		userLookupQuery,
-		{ ...userData, nonce },
+		{ ...userData, nonce, ...userRefData },
 		{ upsert: true, new: true }
 	)
 	if (!user) throw new BaseErrors.ERR_USER_NONCE_NOT_GENERATED()

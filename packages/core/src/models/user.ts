@@ -25,7 +25,13 @@ const UserSchema = new mongoose.Schema({
 
 	ethAddress: String,
 	cosmosAddress: String,
-	aptosAddress: String
+	aptosAddress: String,
+
+	refCode: {
+		type: String,
+		default: () => Math.random().toString(36).substring(2, 8).toUpperCase()
+	},
+	refBy: String
 })
 
 const User = mongoose.model('User', UserSchema)

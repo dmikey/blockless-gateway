@@ -17,7 +17,6 @@ import { lookupAndInvokeFunction } from './services/invoke'
 import {
 	endNodeSession,
 	getUserNode,
-	linkUserNode,
 	listUserNodes,
 	registerNode,
 	startNodeSession
@@ -60,7 +59,6 @@ export class Gateway {
 	nodes: {
 		list: OmitThisParameter<typeof listUserNodes>
 		get: OmitThisParameter<typeof getUserNode>
-		link: OmitThisParameter<typeof linkUserNode>
 		register: OmitThisParameter<typeof registerNode>
 		startSession: OmitThisParameter<typeof startNodeSession>
 		endSession: OmitThisParameter<typeof endNodeSession>
@@ -104,7 +102,6 @@ export class Gateway {
 		this.nodes = {
 			list: listUserNodes.bind(this),
 			get: getUserNode.bind(this),
-			link: linkUserNode.bind(this),
 			register: registerNode.bind(this),
 			startSession: startNodeSession.bind(this),
 			endSession: endNodeSession.bind(this)

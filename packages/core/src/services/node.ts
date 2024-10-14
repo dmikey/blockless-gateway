@@ -65,34 +65,6 @@ export async function getUserNode(userId: string, nodePubKey: string): Promise<I
 }
 
 /**
- * Link a node with a user id
- *
- * @param userId
- * @param nodePubKey
- * @param signature
- * @returns
- */
-export async function linkUserNode(
-	userId: string,
-	nodePubKey: string,
-	signature: string
-): Promise<INodeModel | null> {
-	try {
-		// Link a node with a user id
-		const node = await Nodes.findOneAndUpdate({ pubKey: nodePubKey }, { userId }, { new: true })
-
-		// TODO: verify signature with the user wallet address
-		if (!node || !signature) {
-			throw new Error('Failed to link node')
-		}
-
-		return node
-	} catch (error) {
-		throw new Error('Failed to link node')
-	}
-}
-
-/**
  * Register a node
  *
  * @param data
