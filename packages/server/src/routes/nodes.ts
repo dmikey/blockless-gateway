@@ -36,6 +36,18 @@ export const register = (server: FastifyInstance, opts, next) => {
 		}
 	)
 
+	server.get(
+		'/:nodePubKey/earnings',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request: NodeGetRequest) => {
+			const { publicAddress } = request.user
+			const { nodePubKey } = request.params
+			return gatewayClient.nodes.getEarnings(publicAddress, nodePubKey)
+		}
+	)
+
 	server.post(
 		'/:nodePubKey',
 		{
@@ -44,7 +56,9 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request: NodeRegisterRequest) => {
 			const { publicAddress } = request.user
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.register(publicAddress, nodePubKey, {})
+			const { ipAddress } = request.body
+
+			return gatewayClient.nodes.register(publicAddress, nodePubKey, { ipAddress })
 		}
 	)
 

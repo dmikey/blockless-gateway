@@ -17,6 +17,9 @@ export type NodeRegisterRequest = FastifyRequest<{
 	Params: {
 		nodePubKey: string
 	}
+	Body: {
+		ipAddress: string
+	}
 }>
 
 export type NodeStartSessionRequest = FastifyRequest<{

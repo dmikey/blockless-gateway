@@ -16,11 +16,13 @@ import {
 import { lookupAndInvokeFunction } from './services/invoke'
 import {
 	endNodeSession,
-	getUserNode,
-	listUserNodes,
+	getNode,
+	getNodeEarnings,
+	listNodes,
 	registerNode,
 	startNodeSession
 } from './services/node'
+import { getUserNodeEarnings } from './services/nodeUser'
 
 interface GatewayOptions {
 	mongoUri: string
@@ -37,6 +39,10 @@ export class Gateway {
 		getUser: OmitThisParameter<typeof getUser>
 		getChallenge: OmitThisParameter<typeof generateUserChallenge>
 		verifySignature: OmitThisParameter<typeof verifyUserWalletSignature>
+	}
+
+	user: {
+		getNodeEarnings: OmitThisParameter<typeof getUserNodeEarnings>
 	}
 
 	functions: {
@@ -57,8 +63,9 @@ export class Gateway {
 	}
 
 	nodes: {
-		list: OmitThisParameter<typeof listUserNodes>
-		get: OmitThisParameter<typeof getUserNode>
+		list: OmitThisParameter<typeof listNodes>
+		get: OmitThisParameter<typeof getNode>
+		getEarnings: OmitThisParameter<typeof getNodeEarnings>
 		register: OmitThisParameter<typeof registerNode>
 		startSession: OmitThisParameter<typeof startNodeSession>
 		endSession: OmitThisParameter<typeof endNodeSession>
@@ -99,9 +106,14 @@ export class Gateway {
 			verifySignature: verifyUserWalletSignature.bind(this)
 		}
 
+		this.user = {
+			getNodeEarnings: getUserNodeEarnings.bind(this)
+		}
+
 		this.nodes = {
-			list: listUserNodes.bind(this),
-			get: getUserNode.bind(this),
+			list: listNodes.bind(this),
+			get: getNode.bind(this),
+			getEarnings: getNodeEarnings.bind(this),
 			register: registerNode.bind(this),
 			startSession: startNodeSession.bind(this),
 			endSession: endNodeSession.bind(this)

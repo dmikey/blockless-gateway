@@ -4,13 +4,15 @@ import { IDocument } from '../interfaces/generic'
 
 export interface INodeModel extends IDocument {
 	pubKey: string
-	userId?: string
+	userId: string
+	ipAddress?: string
 }
 
 const NodeSchema = new mongoose.Schema(
 	{
 		pubKey: { type: String, required: true },
-		userId: { type: String, required: false }
+		userId: { type: String, required: true },
+		ipAddress: { type: String, required: false }
 	},
 	{
 		timestamps: true

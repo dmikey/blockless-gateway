@@ -1,6 +1,7 @@
 import { createHash } from 'crypto'
 
 import Nodes, { INodeModel } from '../models/node'
+import NodeRewards from '../models/nodeReward'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
 
 /**
@@ -10,10 +11,12 @@ import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
  * @param data
  * @returns
  */
-export async function listUserNodes(
+export async function listNodes(
 	userId: string,
 	data: { page?: number; limit?: number }
-): Promise<INodeModel[]> {
+): Promise<
+	(INodeModel & { totalReward: number; sessions: INodeSessionModel[]; totalSessionTime: number })[]
+> {
 	try {
 		const page = data.page || 1
 		const limit = data.limit || 10
@@ -23,12 +26,47 @@ export async function listUserNodes(
 			{ $match: { userId: { $regex: userId, $options: 'i' } } },
 			{
 				$lookup: {
+					from: 'noderewards',
+					let: { nodeId: '$_id' },
+					pipeline: [
+						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
+						{ $group: { _id: null, totalReward: { $sum: '$totalReward' } } }
+					],
+					as: 'rewards'
+				}
+			},
+			{
+				$lookup: {
 					from: 'nodesessions',
 					let: { nodeId: '$_id' },
-					pipeline: [{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } }],
+					pipeline: [
+						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
+						{ $sort: { startAt: -1 } },
+						{ $limit: 10 }
+					],
 					as: 'sessions'
 				}
 			},
+			{
+				$addFields: {
+					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] },
+					totalSessionTime: {
+						$reduce: {
+							input: '$sessions',
+							initialValue: 0,
+							in: {
+								$add: [
+									'$$value',
+									{
+										$subtract: [{ $ifNull: ['$$this.endAt', new Date()] }, '$$this.startAt']
+									}
+								]
+							}
+						}
+					}
+				}
+			},
+			{ $project: { rewards: 0 } },
 			{ $sort: { updatedAt: -1 } },
 			{ $skip: skip },
 			{ $limit: limit }
@@ -36,6 +74,7 @@ export async function listUserNodes(
 
 		return nodes
 	} catch (error) {
+		console.error('Failed to list user nodes:', error)
 		return []
 	}
 }
@@ -47,7 +86,62 @@ export async function listUserNodes(
  * @param nodePubKey
  * @returns
  */
-export async function getUserNode(userId: string, nodePubKey: string): Promise<INodeModel | null> {
+export async function getNode(
+	userId: string,
+	nodePubKey: string
+): Promise<
+	INodeModel & { totalReward: number; sessions: INodeSessionModel[]; totalSessionTime: number }
+> {
+	try {
+		const node = await Nodes.findOne({
+			pubKey: nodePubKey,
+			userId: { $regex: userId, $options: 'i' }
+		}).lean()
+
+		if (!node) {
+			throw new Error('Node not found')
+		}
+
+		// Calculate total reward for the node
+		const totalReward = await NodeRewards.aggregate([
+			{ $match: { nodeId: node._id } },
+			{ $group: { _id: null, total: { $sum: '$totalReward' } } }
+		]).then((result) => result[0]?.total || 0)
+
+		// Get all sessions for the node
+		const sessions = await NodeSessions.find({ nodeId: node._id }).lean()
+
+		// Calculate total session time
+		const totalSessionTime = sessions.reduce((total, session) => {
+			const endTime = session.endAt || new Date()
+			const sessionDuration = endTime.getTime() - session.startAt.getTime()
+			return total + sessionDuration
+		}, 0)
+
+		// Get the last 10 sessions for the node
+		const recentSessions = sessions
+			.sort((a, b) => b.startAt.getTime() - a.startAt.getTime())
+			.slice(0, 10)
+
+		return { ...node, totalReward, sessions: recentSessions, totalSessionTime }
+	} catch (error) {
+		throw new Error('Failed to get node')
+	}
+}
+
+/**
+ * Get user node earnings for daily (last 30 days) or monthly (last 12 months)
+ *
+ * @param userId
+ * @param nodePubKey
+ * @param period - 'daily' or 'monthly'
+ * @returns
+ */
+export async function getNodeEarnings(
+	userId: string,
+	nodePubKey: string,
+	period: 'daily' | 'monthly' = 'daily'
+): Promise<{ date: string; earnings: number }[]> {
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
@@ -58,9 +152,34 @@ export async function getUserNode(userId: string, nodePubKey: string): Promise<I
 			throw new Error('Node not found')
 		}
 
-		return node
+		const startDate = new Date()
+		const dateFormat = period === 'daily' ? '%Y-%m-%d' : '%Y-%m'
+
+		if (period === 'daily') {
+			startDate.setDate(startDate.getDate() - 29) // Last 30 days
+		} else {
+			startDate.setMonth(startDate.getMonth() - 11) // Last 12 months
+		}
+
+		const earnings = await NodeRewards.aggregate([
+			{ $match: { nodeId: node._id, createdAt: { $gte: startDate } } },
+			{
+				$group: {
+					_id: { $dateToString: { format: dateFormat, date: '$createdAt' } },
+					earnings: { $sum: '$totalReward' }
+				}
+			},
+			{ $sort: { _id: 1 } },
+			{ $project: { _id: 0, date: '$_id', earnings: 1 } }
+		])
+
+		// Fill in missing dates with zero earnings
+		const filledEarnings = fillMissingDates(earnings, period)
+
+		return filledEarnings
 	} catch (error) {
-		throw new Error('Failed to get node')
+		console.error('Failed to get user node earnings:', error)
+		throw new Error('Failed to get user node earnings')
 	}
 }
 
@@ -184,4 +303,40 @@ export async function getPublicNodeNonce(nodePubKey: string, secret: string): Pr
 	} catch (error) {
 		throw new Error('Failed to get node nonce')
 	}
+}
+
+/**
+ * Helper function to fill in missing dates with zero earnings
+ */
+export function fillMissingDates(
+	earnings: { date: string; earnings: number }[],
+	period: 'daily' | 'monthly'
+): { date: string; earnings: number }[] {
+	const filledEarnings: { date: string; earnings: number }[] = []
+	const endDate = new Date()
+	const startDate = new Date(endDate)
+
+	if (period === 'daily') {
+		startDate.setDate(startDate.getDate() - 29) // Last 30 days
+	} else {
+		startDate.setMonth(startDate.getMonth() - 11) // Last 12 months
+	}
+
+	for (
+		let d = new Date(startDate);
+		d <= endDate;
+		period === 'daily' ? d.setDate(d.getDate() + 1) : d.setMonth(d.getMonth() + 1)
+	) {
+		const dateString =
+			period === 'daily'
+				? d.toISOString().split('T')[0]
+				: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+		const existingEarning = earnings.find((e) => e.date === dateString)
+		filledEarnings.push({
+			date: dateString,
+			earnings: existingEarning ? existingEarning.earnings : 0
+		})
+	}
+
+	return filledEarnings
 }
