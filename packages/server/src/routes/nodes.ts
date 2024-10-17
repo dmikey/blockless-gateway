@@ -2,11 +2,10 @@ import { FastifyInstance } from 'fastify'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import {
-	NodeEndSessionRequest,
 	NodeGetRequest,
 	NodeListRequest,
 	NodeRegisterRequest,
-	NodeStartSessionRequest
+	NodeSessionRequest
 } from '../schema/node'
 import gatewayClient from '../utils/gatewayClient'
 
@@ -57,7 +56,6 @@ export const register = (server: FastifyInstance, opts, next) => {
 			const { publicAddress } = request.user
 			const { nodePubKey } = request.params
 			const { ipAddress } = request.body
-
 			return gatewayClient.nodes.register(publicAddress, nodePubKey, { ipAddress })
 		}
 	)
@@ -67,7 +65,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 		{
 			constraints: { host: REGEX_HOST_MATCH }
 		},
-		async (request: NodeStartSessionRequest) => {
+		async (request: NodeSessionRequest) => {
 			const { publicAddress } = request.user
 			const { nodePubKey } = request.params
 			return gatewayClient.nodes.startSession(publicAddress, nodePubKey)
@@ -79,12 +77,18 @@ export const register = (server: FastifyInstance, opts, next) => {
 		{
 			constraints: { host: REGEX_HOST_MATCH }
 		},
-		async (request: NodeEndSessionRequest) => {
+		async (request: NodeSessionRequest) => {
 			const { publicAddress } = request.user
 			const { nodePubKey } = request.params
 			return gatewayClient.nodes.endSession(publicAddress, nodePubKey)
 		}
 	)
+
+	server.post('/:nodePubKey/ping', async (request: NodeSessionRequest) => {
+		const { publicAddress } = request.user
+		const { nodePubKey } = request.params
+		return gatewayClient.nodes.pingSession(publicAddress, nodePubKey)
+	})
 
 	next()
 }

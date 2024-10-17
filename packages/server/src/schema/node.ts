@@ -22,15 +22,8 @@ export type NodeRegisterRequest = FastifyRequest<{
 	}
 }>
 
-export type NodeStartSessionRequest = FastifyRequest<{
+export type NodeSessionRequest = FastifyRequest<{
 	Params: {
 		nodePubKey: string
-	}
-}>
-
-export type NodeEndSessionRequest = FastifyRequest<{
-	Params: {
-		nodePubKey: string
-		sessionId: string
 	}
 }>

@@ -12,30 +12,31 @@ import { fillMissingDates } from './node'
 export async function getUserNodeEarnings(
 	userId: string,
 	period: 'daily' | 'monthly' = 'daily'
-): Promise<{ date: string; earnings: number }[]> {
+): Promise<{ date: string; baseReward: number; totalReward: number }[]> {
 	try {
 		const startDate = new Date()
 		const dateFormat = period === 'daily' ? '%Y-%m-%d' : '%Y-%m'
 
 		if (period === 'daily') {
-			startDate.setDate(startDate.getDate() - 29) // Last 30 days
+			startDate.setDate(startDate.getDate() - 29)
 		} else {
-			startDate.setMonth(startDate.getMonth() - 11) // Last 12 months
+			startDate.setMonth(startDate.getMonth() - 11)
 		}
 
 		const userNodes = await Nodes.find({ userId: { $regex: userId, $options: 'i' } })
 		const nodeIds = userNodes.map((node) => node._id)
 
 		const earnings = await NodeRewards.aggregate([
-			{ $match: { nodeId: { $in: nodeIds }, createdAt: { $gte: startDate } } },
+			{ $match: { nodeId: { $in: nodeIds }, timestamp: { $gte: startDate } } },
 			{
 				$group: {
-					_id: { $dateToString: { format: dateFormat, date: '$createdAt' } },
-					earnings: { $sum: '$totalReward' }
+					_id: { $dateToString: { format: dateFormat, date: '$timestamp' } },
+					baseReward: { $sum: '$baseReward' },
+					totalReward: { $sum: '$totalReward' }
 				}
 			},
 			{ $sort: { _id: 1 } },
-			{ $project: { _id: 0, date: '$_id', earnings: 1 } }
+			{ $project: { _id: 0, date: '$_id', baseReward: 1, totalReward: 1 } }
 		])
 
 		// Fill in missing dates with zero earnings

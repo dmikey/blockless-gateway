@@ -15,7 +15,12 @@ export async function listNodes(
 	userId: string,
 	data: { page?: number; limit?: number }
 ): Promise<
-	(INodeModel & { totalReward: number; sessions: INodeSessionModel[]; totalSessionTime: number })[]
+	(INodeModel & {
+		totalReward: number
+		sessions: INodeSessionModel[]
+		totalSessionTime: number
+		connected: boolean
+	})[]
 > {
 	try {
 		const page = data.page || 1
@@ -42,28 +47,14 @@ export async function listNodes(
 					pipeline: [
 						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
 						{ $sort: { startAt: -1 } },
-						{ $limit: 10 }
+						{ $limit: 1 }
 					],
 					as: 'sessions'
 				}
 			},
 			{
 				$addFields: {
-					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] },
-					totalSessionTime: {
-						$reduce: {
-							input: '$sessions',
-							initialValue: 0,
-							in: {
-								$add: [
-									'$$value',
-									{
-										$subtract: [{ $ifNull: ['$$this.endAt', new Date()] }, '$$this.startAt']
-									}
-								]
-							}
-						}
-					}
+					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] }
 				}
 			},
 			{ $project: { rewards: 0 } },
@@ -72,7 +63,20 @@ export async function listNodes(
 			{ $limit: limit }
 		])
 
-		return nodes
+		// Add connected check and convert to regular objects
+		const formattedNodes = await Promise.all(
+			nodes.map(async (node) => {
+				const latestSession = node.sessions[0]
+				const nodeObject = Object.assign({}, node.toObject ? node.toObject() : node)
+
+				return {
+					...nodeObject,
+					isConnected: latestSession?.endAt ? false : true
+				}
+			})
+		)
+
+		return formattedNodes
 	} catch (error) {
 		console.error('Failed to list user nodes:', error)
 		return []
@@ -90,41 +94,65 @@ export async function getNode(
 	userId: string,
 	nodePubKey: string
 ): Promise<
-	INodeModel & { totalReward: number; sessions: INodeSessionModel[]; totalSessionTime: number }
+	INodeModel & {
+		totalReward: number
+		sessions: INodeSessionModel[]
+		isConnected: boolean
+	}
 > {
 	try {
-		const node = await Nodes.findOne({
-			pubKey: nodePubKey,
-			userId: { $regex: userId, $options: 'i' }
-		}).lean()
+		const nodes = await Nodes.aggregate([
+			{ $match: { pubKey: nodePubKey, userId: { $regex: userId, $options: 'i' } } },
+			{
+				$lookup: {
+					from: 'noderewards',
+					let: { nodeId: '$_id' },
+					pipeline: [
+						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
+						{ $group: { _id: null, totalReward: { $sum: '$totalReward' } } }
+					],
+					as: 'rewards'
+				}
+			},
+			{
+				$lookup: {
+					from: 'nodesessions',
+					let: { nodeId: '$_id' },
+					pipeline: [
+						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
+						{ $sort: { startAt: -1 } },
+						{ $limit: 1 }
+					],
+					as: 'sessions'
+				}
+			},
+			{
+				$addFields: {
+					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] }
+				}
+			},
+			{ $project: { rewards: 0 } }
+		])
 
-		if (!node) {
+		if (!nodes || nodes.length === 0) {
 			throw new Error('Node not found')
 		}
 
-		// Calculate total reward for the node
-		const totalReward = await NodeRewards.aggregate([
-			{ $match: { nodeId: node._id } },
-			{ $group: { _id: null, total: { $sum: '$totalReward' } } }
-		]).then((result) => result[0]?.total || 0)
+		const formattedNodes = await Promise.all(
+			nodes.map(async (node) => {
+				const latestSession = node.sessions[0]
+				const nodeObject = Object.assign({}, node.toObject ? node.toObject() : node)
 
-		// Get all sessions for the node
-		const sessions = await NodeSessions.find({ nodeId: node._id }).lean()
+				return {
+					...nodeObject,
+					isConnected: latestSession?.endAt ? false : true
+				}
+			})
+		)
 
-		// Calculate total session time
-		const totalSessionTime = sessions.reduce((total, session) => {
-			const endTime = session.endAt || new Date()
-			const sessionDuration = endTime.getTime() - session.startAt.getTime()
-			return total + sessionDuration
-		}, 0)
-
-		// Get the last 10 sessions for the node
-		const recentSessions = sessions
-			.sort((a, b) => b.startAt.getTime() - a.startAt.getTime())
-			.slice(0, 10)
-
-		return { ...node, totalReward, sessions: recentSessions, totalSessionTime }
+		return formattedNodes[0]
 	} catch (error) {
+		console.error('Failed to get node:', error)
 		throw new Error('Failed to get node')
 	}
 }
@@ -141,7 +169,7 @@ export async function getNodeEarnings(
 	userId: string,
 	nodePubKey: string,
 	period: 'daily' | 'monthly' = 'daily'
-): Promise<{ date: string; earnings: number }[]> {
+): Promise<{ date: string; baseReward: number; totalReward: number }[]> {
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
@@ -286,6 +314,52 @@ export async function endNodeSession(
 }
 
 /**
+ *
+ * @param userId
+ * @param nodePubKey
+ * @returns
+ */
+export async function pingNodeSession(
+	userId: string,
+	nodePubKey: string
+): Promise<INodeSessionModel | null> {
+	try {
+		const node = await Nodes.findOne({
+			pubKey: nodePubKey,
+			userId: { $regex: userId, $options: 'i' }
+		})
+
+		if (!node) {
+			throw new Error('Node not found')
+		}
+
+		const now = new Date()
+
+		// Find the active session for the node and update lastPingAt and pings
+		const updatedSession = await NodeSessions.findOneAndUpdate(
+			{
+				nodeId: node._id,
+				endAt: { $exists: false }
+			},
+			{
+				$set: { lastPingAt: now },
+				$push: { pings: { timestamp: now } }
+			},
+			{ new: true }
+		)
+
+		if (!updatedSession) {
+			throw new Error('No active session found for this node')
+		}
+
+		return updatedSession
+	} catch (error) {
+		console.error('Failed to ping node session:', error)
+		throw new Error('Failed to ping node session')
+	}
+}
+
+/**
  * Get a node nonce
  *
  * @param nodePubKey
@@ -309,17 +383,17 @@ export async function getPublicNodeNonce(nodePubKey: string, secret: string): Pr
  * Helper function to fill in missing dates with zero earnings
  */
 export function fillMissingDates(
-	earnings: { date: string; earnings: number }[],
+	rewards: { date: string; baseReward: number; totalReward: number }[],
 	period: 'daily' | 'monthly'
-): { date: string; earnings: number }[] {
-	const filledEarnings: { date: string; earnings: number }[] = []
+): { date: string; baseReward: number; totalReward: number }[] {
+	const filledEarnings: { date: string; baseReward: number; totalReward: number }[] = []
 	const endDate = new Date()
 	const startDate = new Date(endDate)
 
 	if (period === 'daily') {
-		startDate.setDate(startDate.getDate() - 29) // Last 30 days
+		startDate.setDate(startDate.getDate() - 29)
 	} else {
-		startDate.setMonth(startDate.getMonth() - 11) // Last 12 months
+		startDate.setMonth(startDate.getMonth() - 11)
 	}
 
 	for (
@@ -331,12 +405,73 @@ export function fillMissingDates(
 			period === 'daily'
 				? d.toISOString().split('T')[0]
 				: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-		const existingEarning = earnings.find((e) => e.date === dateString)
+		const existingEarning = rewards.find((e) => e.date === dateString)
 		filledEarnings.push({
 			date: dateString,
-			earnings: existingEarning ? existingEarning.earnings : 0
+			baseReward: existingEarning ? existingEarning.baseReward : 0,
+			totalReward: existingEarning ? existingEarning.totalReward : 0
 		})
 	}
 
 	return filledEarnings
+}
+
+/**
+ * Get active nodes for the last 10 minutes and add rewards
+ *
+ * @returns Array of active node IDs
+ */
+export async function processNodeRewards(): Promise<string[]> {
+	try {
+		const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000)
+
+		// End sessions without pings in the last 10 minutes
+		await NodeSessions.updateMany(
+			{
+				endAt: { $exists: false },
+				$or: [
+					{ lastPingAt: { $lt: tenMinutesAgo } },
+					{ lastPingAt: { $exists: false }, startAt: { $lt: tenMinutesAgo } }
+				]
+			},
+			{ $set: { endAt: new Date() } }
+		)
+
+		// Get active sessions
+		const activeSessions = await NodeSessions.aggregate([
+			{
+				$match: {
+					endAt: { $exists: false },
+					$or: [
+						{ lastPingAt: { $gte: tenMinutesAgo } },
+						{ lastPingAt: { $exists: false }, startAt: { $gte: tenMinutesAgo } }
+					]
+				}
+			},
+			{
+				$group: {
+					_id: '$nodeId'
+				}
+			}
+		])
+
+		const activeNodeIds = activeSessions.map((session) => session._id)
+
+		// Prepare rewards data for active nodes
+		const rewardsData = activeNodeIds.map((nodeId) => ({
+			nodeId,
+			boost: 1,
+			baseReward: 10,
+			totalReward: 10,
+			timestamp: new Date()
+		}))
+
+		// Insert rewards for all active nodes in a single operation
+		await NodeRewards.insertMany(rewardsData)
+
+		return activeNodeIds.map((id) => id.toString())
+	} catch (error) {
+		console.error('Failed to get active nodes and add rewards:', error)
+		throw new Error('Failed to get active nodes and add rewards')
+	}
 }

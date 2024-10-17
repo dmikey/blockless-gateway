@@ -19,6 +19,8 @@ import {
 	getNode,
 	getNodeEarnings,
 	listNodes,
+	pingNodeSession,
+	processNodeRewards,
 	registerNode,
 	startNodeSession
 } from './services/node'
@@ -69,6 +71,11 @@ export class Gateway {
 		register: OmitThisParameter<typeof registerNode>
 		startSession: OmitThisParameter<typeof startNodeSession>
 		endSession: OmitThisParameter<typeof endNodeSession>
+		pingSession: OmitThisParameter<typeof pingNodeSession>
+	}
+
+	nodesAdmin: {
+		processNodeRewards: OmitThisParameter<typeof processNodeRewards>
 	}
 
 	constructor(options: GatewayOptions) {
@@ -116,7 +123,12 @@ export class Gateway {
 			getEarnings: getNodeEarnings.bind(this),
 			register: registerNode.bind(this),
 			startSession: startNodeSession.bind(this),
-			endSession: endNodeSession.bind(this)
+			endSession: endNodeSession.bind(this),
+			pingSession: pingNodeSession.bind(this)
+		}
+
+		this.nodesAdmin = {
+			processNodeRewards: processNodeRewards.bind(this)
 		}
 	}
 
