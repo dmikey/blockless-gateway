@@ -24,7 +24,7 @@ import {
 	registerNode,
 	startNodeSession
 } from './services/node'
-import { getUserNodeEarnings } from './services/nodeUser'
+import { getUserNodeEarnings, getUserOverview, getUserReferrals } from './services/nodeUser'
 
 interface GatewayOptions {
 	mongoUri: string
@@ -44,7 +44,9 @@ export class Gateway {
 	}
 
 	user: {
-		getNodeEarnings: OmitThisParameter<typeof getUserNodeEarnings>
+		getOverview: OmitThisParameter<typeof getUserOverview>
+		getEarnings: OmitThisParameter<typeof getUserNodeEarnings>
+		getReferrals: OmitThisParameter<typeof getUserReferrals>
 	}
 
 	functions: {
@@ -114,7 +116,9 @@ export class Gateway {
 		}
 
 		this.user = {
-			getNodeEarnings: getUserNodeEarnings.bind(this)
+			getOverview: getUserOverview.bind(this),
+			getEarnings: getUserNodeEarnings.bind(this),
+			getReferrals: getUserReferrals.bind(this)
 		}
 
 		this.nodes = {

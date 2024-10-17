@@ -391,7 +391,7 @@ export function fillMissingDates(
 	const startDate = new Date(endDate)
 
 	if (period === 'daily') {
-		startDate.setDate(startDate.getDate() - 29)
+		startDate.setDate(startDate.getDate() - 14)
 	} else {
 		startDate.setMonth(startDate.getMonth() - 11)
 	}

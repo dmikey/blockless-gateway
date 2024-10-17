@@ -13,7 +13,29 @@ export const register = (server: FastifyInstance, opts, next) => {
 		},
 		async (request) => {
 			const { publicAddress } = request.user
-			return gatewayClient.user.getNodeEarnings(publicAddress, 'daily')
+			return gatewayClient.user.getEarnings(publicAddress, 'daily')
+		}
+	)
+
+	server.get(
+		'/referrals',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { publicAddress } = request.user
+			return gatewayClient.user.getReferrals(publicAddress)
+		}
+	)
+
+	server.get(
+		'/overview',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { publicAddress } = request.user
+			return gatewayClient.user.getOverview(publicAddress)
 		}
 	)
 
