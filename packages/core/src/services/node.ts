@@ -27,6 +27,9 @@ export async function listNodes(
 		const limit = data.limit || 10
 		const skip = (page - 1) * limit
 
+		const today = new Date()
+		today.setUTCHours(0, 0, 0, 0)
+
 		const nodes = await Nodes.aggregate([
 			{ $match: { userId: { $regex: userId, $options: 'i' } } },
 			{
@@ -35,7 +38,17 @@ export async function listNodes(
 					let: { nodeId: '$_id' },
 					pipeline: [
 						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
-						{ $group: { _id: null, totalReward: { $sum: '$totalReward' } } }
+						{
+							$group: {
+								_id: null,
+								totalReward: { $sum: '$totalReward' },
+								todayReward: {
+									$sum: {
+										$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+									}
+								}
+							}
+						}
 					],
 					as: 'rewards'
 				}
@@ -54,7 +67,8 @@ export async function listNodes(
 			},
 			{
 				$addFields: {
-					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] }
+					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] },
+					todayReward: { $ifNull: [{ $arrayElemAt: ['$rewards.todayReward', 0] }, 0] }
 				}
 			},
 			{ $project: { rewards: 0 } },
@@ -96,11 +110,15 @@ export async function getNode(
 ): Promise<
 	INodeModel & {
 		totalReward: number
+		todayReward: number
 		sessions: INodeSessionModel[]
 		isConnected: boolean
 	}
 > {
 	try {
+		const today = new Date()
+		today.setUTCHours(0, 0, 0, 0)
+
 		const nodes = await Nodes.aggregate([
 			{ $match: { pubKey: nodePubKey, userId: { $regex: userId, $options: 'i' } } },
 			{
@@ -109,7 +127,17 @@ export async function getNode(
 					let: { nodeId: '$_id' },
 					pipeline: [
 						{ $match: { $expr: { $eq: ['$nodeId', '$$nodeId'] } } },
-						{ $group: { _id: null, totalReward: { $sum: '$totalReward' } } }
+						{
+							$group: {
+								_id: null,
+								totalReward: { $sum: '$totalReward' },
+								todayReward: {
+									$sum: {
+										$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+									}
+								}
+							}
+						}
 					],
 					as: 'rewards'
 				}
@@ -128,7 +156,8 @@ export async function getNode(
 			},
 			{
 				$addFields: {
-					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] }
+					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] },
+					todayReward: { $ifNull: [{ $arrayElemAt: ['$rewards.todayReward', 0] }, 0] }
 				}
 			},
 			{ $project: { rewards: 0 } }
