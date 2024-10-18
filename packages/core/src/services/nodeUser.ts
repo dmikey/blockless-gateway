@@ -9,41 +9,67 @@ import { fillMissingDates } from './node'
  * @param userId
  * @returns
  */
-export async function getUserOverview(
-	userId: string
-): Promise<{ todayBaseReward: number; todayTotalReward: number; todayReferralsReward: number }> {
+export async function getUserOverview(userId: string): Promise<{
+	todayBaseReward: number
+	todayTotalReward: number
+	todayReferralsReward: number
+	allTimeBaseReward: number
+	allTimeTotalReward: number
+	allTimeReferralsReward: number
+}> {
 	try {
 		// Calculate start of today without using a library
-		const now = new Date()
-		const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+		const today = new Date()
+		today.setUTCHours(0, 0, 0, 0)
 
 		// Get the user's nodes
 		const userNodes = await Nodes.find({ userId: { $regex: userId, $options: 'i' } })
 		const nodeIds = userNodes.map((node) => node._id)
 
-		// Get the rewards for today
+		// Get the rewards for today and all-time
 		const rewardsAggregate = await NodeRewards.aggregate([
 			{
 				$match: {
-					nodeId: { $in: nodeIds },
-					timestamp: { $gte: today }
+					nodeId: { $in: nodeIds }
 				}
 			},
 			{
 				$group: {
 					_id: null,
-					todayBaseReward: { $sum: '$baseReward' },
-					todayTotalReward: { $sum: '$totalReward' }
+					todayBaseReward: {
+						$sum: {
+							$cond: [{ $gte: ['$timestamp', today] }, '$baseReward', 0]
+						}
+					},
+					todayTotalReward: {
+						$sum: {
+							$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+						}
+					},
+					allTimeBaseReward: { $sum: '$baseReward' },
+					allTimeTotalReward: { $sum: '$totalReward' }
 				}
 			}
 		])
 
-		const { todayBaseReward = 0, todayTotalReward = 0 } = rewardsAggregate[0] || {}
+		const {
+			todayBaseReward = 0,
+			todayTotalReward = 0,
+			allTimeBaseReward = 0,
+			allTimeTotalReward = 0
+		} = rewardsAggregate[0] || {}
+
+		// TODO: Implement referral reward calculation
+		const todayReferralsReward = 0
+		const allTimeReferralsReward = 0
 
 		return {
 			todayBaseReward,
 			todayTotalReward,
-			todayReferralsReward: 0
+			todayReferralsReward,
+			allTimeBaseReward,
+			allTimeTotalReward,
+			allTimeReferralsReward
 		}
 	} catch (error) {
 		console.error('Failed to get user overview:', error)
