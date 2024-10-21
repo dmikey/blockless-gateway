@@ -63,7 +63,7 @@ async function authSignAPI(request: AuthSignPostRequest) {
 	// Generate a JWT if signature is valid
 	const token = (this as FastifyInstance).jwt.sign(
 		{ publicAddress: userWallet.walletAddress, walletType: userWallet.walletType },
-		{ expiresIn: '24h' }
+		{ expiresIn: '1w' }
 	)
 
 	return { token }
