@@ -85,7 +85,7 @@ export async function listNodes(
 
 				return {
 					...nodeObject,
-					isConnected: latestSession?.endAt ? false : true
+					isConnected: latestSession && !latestSession.endAt ? true : false
 				}
 			})
 		)
@@ -174,7 +174,7 @@ export async function getNode(
 
 				return {
 					...nodeObject,
-					isConnected: latestSession?.endAt ? false : true
+					isConnected: latestSession && !latestSession.endAt ? true : false
 				}
 			})
 		)
