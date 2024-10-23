@@ -243,6 +243,8 @@ export async function getNodeEarnings(
 /**
  * Register a node
  *
+ * @param userId
+ * @param nodePubKey
  * @param data
  * @returns
  */
@@ -254,6 +256,14 @@ export async function registerNode(
 	try {
 		if (!nodePubKey) {
 			throw new Error('Public key is required to register a node')
+		}
+
+		// Count existing nodes for the user
+		const nodeCount = await Nodes.count({ userId: { $regex: userId, $options: 'i' } })
+
+		// If the user has 5 or more nodes, throw an error
+		if (nodeCount >= 5) {
+			throw new Error('Maximum number of nodes (5) reached for this account')
 		}
 
 		const node = await Nodes.findOneAndUpdate(
