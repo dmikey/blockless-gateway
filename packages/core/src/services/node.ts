@@ -259,10 +259,16 @@ export async function registerNode(
 		}
 
 		// Count existing nodes for the user
-		const nodeCount = await Nodes.count({ userId: { $regex: userId, $options: 'i' } })
+		const nodeCount = await Nodes.countDocuments({ userId: { $regex: userId, $options: 'i' } })
 
-		// If the user has 5 or more nodes, throw an error
-		if (nodeCount >= 5) {
+		// Check if the node already exists
+		const existingNode = await Nodes.findOne({
+			pubKey: nodePubKey,
+			userId: { $regex: userId, $options: 'i' }
+		})
+
+		// If the node doesn't exist and the user has 5 or more nodes, throw an error
+		if (!existingNode && nodeCount >= 5) {
 			throw new Error('Maximum number of nodes (5) reached for this account')
 		}
 
