@@ -78,6 +78,15 @@ cronSchedule(
 	}
 )
 
+cronSchedule(
+	'*/2 * * * *',
+	async () => {
+		await gatewayClient.nodesAdmin.processRemovalDanglingNodes()
+		console.log('Removed dangling nodes')
+	},
+	{ scheduled: true, timezone: 'UTC' }
+)
+
 // Run the server
 server.listen(
 	{ port: Number(process.env.SERVER_PORT), host: process.env.SERVER_HOST },

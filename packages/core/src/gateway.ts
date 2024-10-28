@@ -21,6 +21,7 @@ import {
 	listNodes,
 	pingNodeSession,
 	processNodeRewards,
+	processRemovalDanglingNodes,
 	registerNode,
 	startNodeSession
 } from './services/node'
@@ -78,6 +79,7 @@ export class Gateway {
 
 	nodesAdmin: {
 		processNodeRewards: OmitThisParameter<typeof processNodeRewards>
+		processRemovalDanglingNodes: OmitThisParameter<typeof processRemovalDanglingNodes>
 	}
 
 	constructor(options: GatewayOptions) {
@@ -132,7 +134,8 @@ export class Gateway {
 		}
 
 		this.nodesAdmin = {
-			processNodeRewards: processNodeRewards.bind(this)
+			processNodeRewards: processNodeRewards.bind(this),
+			processRemovalDanglingNodes: processRemovalDanglingNodes.bind(this)
 		}
 	}
 

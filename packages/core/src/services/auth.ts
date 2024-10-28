@@ -37,19 +37,25 @@ export async function getUser(userWallet: UserWallet) {
  */
 export async function generateUserChallenge(
 	{ walletKey, walletAddress }: UserWallet,
-	data: { refBy?: string }
+	data: { refBy?: string; metadata?: Record<string, unknown> }
 ): Promise<string> {
 	const nonce = crypto.randomBytes(16).toString('base64')
 
 	const userLookupQuery: { [key: string]: unknown } = {}
 	const userData: { [key: string]: string } = {}
-	const userRefData: { [key: string]: string } = {}
+	const userRefData: { [key: string]: unknown } = {}
 	userLookupQuery[walletKey] = { $regex: new RegExp(walletAddress, 'i') }
 	userData[walletKey] = walletAddress
 
 	const userExists = await User.findOne(userLookupQuery)
-	if (!userExists && data && data.refBy) {
-		userRefData.refBy = data.refBy
+	if (!userExists) {
+		if (data && data.refBy) {
+			userRefData.refBy = data.refBy
+		}
+
+		if (data && data.metadata) {
+			userRefData.metadata = data.metadata
+		}
 	}
 
 	const user = await User.findOneAndUpdate(

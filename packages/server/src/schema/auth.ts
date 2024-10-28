@@ -5,7 +5,7 @@ import { UserWalletRequest, UserWalletType } from '@blockless/gateway-core'
 // Schemas
 
 export type AuthChallengePostRequest = FastifyRequest<{
-	Body: UserWalletRequest & { refBy?: string }
+	Body: UserWalletRequest & { refBy?: string; metadata?: Record<string, unknown> }
 }>
 
 export const AuthChallengePostSchema = {

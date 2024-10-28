@@ -31,7 +31,12 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		default: () => Math.random().toString(36).substring(2, 8).toUpperCase()
 	},
-	refBy: String
+	refBy: String,
+
+	metadata: {
+		type: mongoose.Schema.Types.Mixed,
+		default: {}
+	}
 })
 
 const User = mongoose.model('User', UserSchema)

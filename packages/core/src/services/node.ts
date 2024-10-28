@@ -462,6 +462,30 @@ export function fillMissingDates(
 }
 
 /**
+ * Process removal of dangling nodes
+ */
+export async function processRemovalDanglingNodes(): Promise<void> {
+	try {
+		const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000)
+
+		// End sessions without pings in the last 2 minutes
+		await NodeSessions.updateMany(
+			{
+				endAt: { $exists: false },
+				$or: [
+					{ lastPingAt: { $lt: twoMinutesAgo } },
+					{ lastPingAt: { $exists: false }, startAt: { $lt: twoMinutesAgo } }
+				]
+			},
+			{ $set: { endAt: new Date() } }
+		)
+	} catch (error) {
+		console.error('Failed to process removal of dangling nodes:', error)
+		throw new Error('Failed to process removal of dangling nodes')
+	}
+}
+
+/**
  * Get active nodes for the last 10 minutes and add rewards
  *
  * @returns Array of active node IDs
@@ -470,17 +494,7 @@ export async function processNodeRewards(): Promise<string[]> {
 	try {
 		const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000)
 
-		// End sessions without pings in the last 10 minutes
-		await NodeSessions.updateMany(
-			{
-				endAt: { $exists: false },
-				$or: [
-					{ lastPingAt: { $lt: tenMinutesAgo } },
-					{ lastPingAt: { $exists: false }, startAt: { $lt: tenMinutesAgo } }
-				]
-			},
-			{ $set: { endAt: new Date() } }
-		)
+		await processRemovalDanglingNodes()
 
 		// Get active sessions
 		const activeSessions = await NodeSessions.aggregate([

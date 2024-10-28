@@ -32,10 +32,10 @@ async function authLoginAPI(_, reply: FastifyReply) {
  * @returns
  */
 async function authChallengeAPI(request: AuthChallengePostRequest) {
-	const { refBy } = request.body
+	const { refBy, metadata } = request.body
 
 	const userWallet = getUserWallet(request.body)
-	const nonce = await gatewayClient.auth.getChallenge(userWallet, { refBy })
+	const nonce = await gatewayClient.auth.getChallenge(userWallet, { refBy, metadata })
 
 	return { nonce }
 }
