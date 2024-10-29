@@ -196,3 +196,89 @@ export async function getUserNodeEarnings(
 		throw new Error('Failed to get all user nodes earnings')
 	}
 }
+
+export async function getUserLeaderboard(userId: string): Promise<{
+	rank: number
+	totalUsers: number
+	leaderboard: Array<{
+		address: string
+		totalTime: number
+		todayTime: number
+		rank: number
+		isCurrentUser: boolean
+	}>
+}> {
+	try {
+		// Calculate start of today
+		const today = new Date()
+		today.setUTCHours(0, 0, 0, 0)
+
+		// Get all nodes and their user IDs
+		const nodes = await Nodes.find({})
+		const nodesByUser = nodes.reduce(
+			(acc, node) => {
+				if (!acc[node.userId]) acc[node.userId] = []
+				acc[node.userId].push(node._id)
+				return acc
+			},
+			{} as { [key: string]: string[] }
+		)
+
+		// Aggregate rewards for each user, including today's rewards
+		const userRewards = await NodeRewards.aggregate([
+			{
+				$group: {
+					_id: { $toString: '$nodeId' },
+					totalReward: { $sum: '$totalReward' },
+					todayReward: {
+						$sum: {
+							$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+						}
+					}
+				}
+			}
+		])
+
+		// Calculate total and today's rewards per user
+		const userTotalRewards = Object.entries(nodesByUser).map(([userId, nodeIds]) => {
+			const totalReward = nodeIds.reduce((sum, nodeId) => {
+				const nodeReward = userRewards.find((reward) => reward._id === nodeId.toString())
+				return sum + (nodeReward?.totalReward || 0)
+			}, 0)
+			const todayReward = nodeIds.reduce((sum, nodeId) => {
+				const nodeReward = userRewards.find((reward) => reward._id === nodeId.toString())
+				return sum + (nodeReward?.todayReward || 0)
+			}, 0)
+			return { userId, totalReward, todayReward }
+		})
+
+		// Sort users by total rewards and add ranks
+		const rankedUsers = userTotalRewards
+			.sort((a, b) => b.totalReward - a.totalReward)
+			.map((user, index) => ({
+				address: user.userId,
+				totalTime: user.totalReward,
+				todayTime: user.todayReward,
+				rank: index + 1,
+				isCurrentUser: user.userId.toLowerCase() === userId.toLowerCase()
+			}))
+
+		// Get top 100 users and ensure current user is included
+		const leaderboard = rankedUsers.slice(0, 100)
+		const currentUser = rankedUsers.find((user) => user.isCurrentUser)
+
+		// If current user is not in top 100, add them at the end
+		if (currentUser && !leaderboard.find((user) => user.isCurrentUser)) {
+			leaderboard.push(currentUser)
+		}
+
+		return {
+			rank: currentUser?.rank || 0,
+			totalUsers: userTotalRewards.length,
+			leaderboard
+		}
+	} catch (error) {
+		console.error('Failed to get user leaderboard:', error)
+		throw new Error('Failed to get user leaderboard')
+	}
+}

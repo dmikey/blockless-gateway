@@ -29,6 +29,17 @@ export const register = (server: FastifyInstance, opts, next) => {
 	)
 
 	server.get(
+		'/leaderboard',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { publicAddress } = request.user
+			return gatewayClient.user.getLeaderboard(publicAddress)
+		}
+	)
+
+	server.get(
 		'/overview',
 		{
 			constraints: { host: REGEX_HOST_MATCH }
