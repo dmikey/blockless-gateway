@@ -82,17 +82,65 @@ export async function getUserOverview(userId: string): Promise<{
  * @param userId
  * @returns Object containing referrals and total referral rewards
  */
-export async function getUserReferrals(
-	userId: string
-): Promise<{ referrals: unknown[]; totalReferralReward: number }> {
+export async function getUserReferrals(userId: string): Promise<{
+	refCode: string
+	referrals: unknown[]
+	todayReferralTime: number
+	totalReferralTime: number
+}> {
 	try {
+		const user = await User.findOne({
+			ethAddress: { $regex: userId, $options: 'i' }
+		})
+
 		const referrals = await User.find({
 			refBy: { $regex: userId, $options: 'i' }
 		})
 
+		// Get all nodes belonging to referred users
+		const referralUserIds = referrals.map((referral) => referral.ethAddress)
+		const referralNodes = await Nodes.find({
+			userId: { $in: referralUserIds }
+		})
+		const referralNodeIds = referralNodes.map((node) => node._id)
+
+		// Calculate start of today
+		const today = new Date()
+		today.setUTCHours(0, 0, 0, 0)
+
+		// Get rewards for referred nodes
+		const rewardsAggregate = await NodeRewards.aggregate([
+			{
+				$match: {
+					nodeId: { $in: referralNodeIds }
+				}
+			},
+			{
+				$group: {
+					_id: null,
+					todayTime: {
+						$sum: {
+							$cond: [{ $gte: ['$timestamp', today] }, '$baseReward', 0]
+						}
+					},
+					totalTime: {
+						$sum: '$baseReward'
+					}
+				}
+			}
+		])
+
+		const { todayTime = 0, totalTime = 0 } = rewardsAggregate[0] || {}
+
+		// Calculate 10% of the time (in minutes)
+		const todayReferralTime = Math.floor(todayTime * 0.1)
+		const totalReferralTime = Math.floor(totalTime * 0.1)
+
 		return {
+			refCode: user?.refCode || '',
 			referrals,
-			totalReferralReward: 0
+			todayReferralTime,
+			totalReferralTime
 		}
 	} catch (error) {
 		console.error('Failed to get user referrals:', error)
