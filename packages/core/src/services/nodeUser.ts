@@ -83,6 +83,7 @@ export async function getUserOverview(userId: string): Promise<{
  * @returns Object containing referrals and total referral rewards
  */
 export async function getUserReferrals(userId: string): Promise<{
+	isReferred: boolean
 	refCode: string
 	referrals: unknown[]
 	todayReferralTime: number
@@ -137,6 +138,7 @@ export async function getUserReferrals(userId: string): Promise<{
 		const totalReferralTime = Math.floor(totalTime * 0.1)
 
 		return {
+			isReferred: !!user?.refBy,
 			refCode: user?.refCode || '',
 			referrals,
 			todayReferralTime,
