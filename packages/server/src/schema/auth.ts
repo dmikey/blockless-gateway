@@ -22,6 +22,9 @@ export const AuthChallengePostSchema = {
 		},
 		refBy: {
 			type: 'string'
+		},
+		metadata: {
+			type: 'object'
 		}
 	},
 	anyOf: [
