@@ -95,7 +95,7 @@ export async function getUserReferrals(userId: string): Promise<{
 		})
 
 		const referrals = await User.find({
-			refBy: { $regex: userId, $options: 'i' }
+			refBy: user?.refCode
 		})
 
 		// Get all nodes belonging to referred users

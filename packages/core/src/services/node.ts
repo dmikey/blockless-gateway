@@ -529,18 +529,23 @@ export async function processNodeRewards(): Promise<string[]> {
 					let: { userId: '$userId' },
 					pipeline: [
 						{ $match: { $expr: { $eq: ['$ethAddress', '$$userId'] } } },
-						{ $project: { refBy: 1 } }
+						{ $project: { refBy: 1, refCode: 1 } }
 					],
 					as: 'user'
 				}
 			},
 			{
-				// Add lookup to count referrals
 				$lookup: {
 					from: 'users',
-					let: { userId: '$userId' },
+					let: { refCode: { $arrayElemAt: ['$user.refCode', 0] } },
 					pipeline: [
-						{ $match: { $expr: { $eq: ['$refBy', '$$userId'] } } },
+						{
+							$match: {
+								$expr: {
+									$and: [{ $ne: ['$$refCode', null] }, { $eq: ['$refBy', '$$refCode'] }]
+								}
+							}
+						},
 						{ $count: 'referralCount' }
 					],
 					as: 'referrals'
