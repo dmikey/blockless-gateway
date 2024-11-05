@@ -37,6 +37,8 @@ const UserSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.Mixed,
 		default: {}
 	}
+}, {
+	timestamps: true
 })
 
 const User = mongoose.model('User', UserSchema)

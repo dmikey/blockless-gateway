@@ -85,7 +85,7 @@ export async function getUserOverview(userId: string): Promise<{
 export async function getUserReferrals(userId: string): Promise<{
 	isReferred: boolean
 	refCode: string
-	referrals: unknown[]
+	referrals: Array<{ user: unknown, totalTime: number }>
 	todayReferralTime: number
 	totalReferralTime: number
 }> {
@@ -137,10 +137,39 @@ export async function getUserReferrals(userId: string): Promise<{
 		const todayReferralTime = Math.floor(todayTime * 0.1)
 		const totalReferralTime = Math.floor(totalTime * 0.1)
 
+		// Get all nodes and rewards for each referred user
+		const referralStats = await Promise.all(
+			referrals.map(async (referral) => {
+				const userNodes = await Nodes.find({
+					userId: { $regex: referral.ethAddress, $options: 'i' }
+				})
+				const userNodeIds = userNodes.map(node => node._id)
+
+				const userRewards = await NodeRewards.aggregate([
+					{
+						$match: {
+							nodeId: { $in: userNodeIds }
+						}
+					},
+					{
+						$group: {
+							_id: null,
+							totalTime: { $sum: '$totalReward' }
+						}
+					}
+				])
+
+				return {
+					user: referral,
+					totalTime: userRewards[0]?.totalTime || 0
+				}
+			})
+		)
+
 		return {
 			isReferred: !!user?.refBy,
 			refCode: user?.refCode || '',
-			referrals,
+			referrals: referralStats,
 			todayReferralTime,
 			totalReferralTime
 		}
