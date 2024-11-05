@@ -154,7 +154,7 @@ export async function getUserReferrals(userId: string): Promise<{
 					{
 						$group: {
 							_id: null,
-							totalTime: { $sum: '$totalReward' }
+							totalTime: { $sum: '$baseReward' }
 						}
 					}
 				])
