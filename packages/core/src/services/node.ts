@@ -41,10 +41,10 @@ export async function listNodes(
 						{
 							$group: {
 								_id: null,
-								totalReward: { $sum: '$totalReward' },
+								totalReward: { $sum: '$baseReward' },
 								todayReward: {
 									$sum: {
-										$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+										$cond: [{ $gte: ['$timestamp', today] }, '$baseReward', 0]
 									}
 								}
 							}
@@ -130,10 +130,10 @@ export async function getNode(
 						{
 							$group: {
 								_id: null,
-								totalReward: { $sum: '$totalReward' },
+								totalReward: { $sum: '$baseReward' },
 								todayReward: {
 									$sum: {
-										$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+										$cond: [{ $gte: ['$timestamp', today] }, '$baseReward', 0]
 									}
 								}
 							}
@@ -529,58 +529,26 @@ export async function processNodeRewards(): Promise<string[]> {
 					let: { userId: '$userId' },
 					pipeline: [
 						{ $match: { $expr: { $eq: ['$ethAddress', '$$userId'] } } },
-						{ $project: { refBy: 1, refCode: 1 } }
+						{ $project: { refBy: 1, isTwitterConnected: 1, isDiscordConnected: 1 } }
 					],
 					as: 'user'
-				}
-			},
-			{
-				$lookup: {
-					from: 'users',
-					let: { refCode: { $arrayElemAt: ['$user.refCode', 0] } },
-					pipeline: [
-						{
-							$match: {
-								$expr: {
-									$and: [{ $ne: ['$$refCode', null] }, { $eq: ['$refBy', '$$refCode'] }]
-								}
-							}
-						},
-						{ $count: 'referralCount' }
-					],
-					as: 'referrals'
 				}
 			}
 		])
 
 		// Prepare rewards data with referral boost
 		const rewardsData = nodesWithUsers.map((node) => {
-			const hasReferral = node.user?.[0]?.refBy
-			const referralCount = node.referrals?.[0]?.referralCount || 0
-
-			const tiers = [
-				{ min: 0, boost: 0 },
-				{ min: 1, boost: 5 },
-				{ min: 3, boost: 7 },
-				{ min: 5, boost: 9 },
-				{ min: 10, boost: 12 },
-				{ min: 20, boost: 15 },
-				{ min: 30, boost: 18 },
-				{ min: 50, boost: 21 },
-				{ min: 80, boost: 25 },
-				{ min: 100, boost: 30 }
-			].sort((a, b) => b.min - a.min) // Sort in descending order to find correct tier
-
-			// Find the highest tier that matches the referral count
-			const tier = tiers.find((tier) => referralCount >= tier.min) || tiers[0]
+			const hasBeenReferred = node.user?.[0]?.refBy
+			const hasConnectedTwitter = node.user?.[0]?.isTwitterConnected
+			const hasConnectedDiscord = node.user?.[0]?.isDiscordConnected
 
 			// Calculate total boost:
-			// - Base boost from tier (in percentage)
-			// - Additional 10% if user was referred
-			const tierBoost = tier.boost / 100 // Convert percentage to decimal
-			const referralBoost = hasReferral ? 0.1 : 0 // 10% boost if referred
-			const totalBoost = 1 + Math.max(tierBoost, referralBoost)
-			console.log('node', node, tier, tierBoost, referralBoost, totalBoost)
+			const referralBoost = hasBeenReferred ? 0.1 : 0 // 10% boost if referred
+			const twitterBoost = hasConnectedTwitter ? 0.05 : 0 // 5% boost if connected to Twitter
+			const discordBoost = hasConnectedDiscord ? 0.05 : 0 // 5% boost if connected to Discord
+			const totalBoost = 1 + (referralBoost + twitterBoost + discordBoost)
+
+			console.log('node', node, referralBoost, twitterBoost, discordBoost, totalBoost)
 
 			const baseReward = 10
 

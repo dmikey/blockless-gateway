@@ -17,29 +17,32 @@ export const UserWalletTypeKeys: { [key in UserWalletType]: UserWalletTypeKey } 
 	martian: 'aptosAddress'
 }
 
-const UserSchema = new mongoose.Schema({
-	nonce: {
-		type: String,
-		required: true
+const UserSchema = new mongoose.Schema(
+	{
+		nonce: {
+			type: String,
+			required: true
+		},
+
+		ethAddress: String,
+		cosmosAddress: String,
+		aptosAddress: String,
+
+		refCode: {
+			type: String,
+			default: () => Math.random().toString(36).substring(2, 8).toUpperCase()
+		},
+		refBy: String,
+
+		metadata: {
+			type: mongoose.Schema.Types.Mixed,
+			default: {}
+		}
 	},
-
-	ethAddress: String,
-	cosmosAddress: String,
-	aptosAddress: String,
-
-	refCode: {
-		type: String,
-		default: () => Math.random().toString(36).substring(2, 8).toUpperCase()
-	},
-	refBy: String,
-
-	metadata: {
-		type: mongoose.Schema.Types.Mixed,
-		default: {}
+	{
+		timestamps: true
 	}
-}, {
-	timestamps: true
-})
+)
 
 const User = mongoose.model('User', UserSchema)
 export default User
