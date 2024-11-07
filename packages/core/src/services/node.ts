@@ -428,10 +428,15 @@ export async function getPublicNodeNonce(nodePubKey: string, secret: string): Pr
  * Helper function to fill in missing dates with zero earnings
  */
 export function fillMissingDates(
-	rewards: { date: string; baseReward: number; totalReward: number }[],
+	rewards: { date: string; baseReward: number; totalReward: number; referralReward?: number }[],
 	period: 'daily' | 'monthly'
-): { date: string; baseReward: number; totalReward: number }[] {
-	const filledEarnings: { date: string; baseReward: number; totalReward: number }[] = []
+): { date: string; baseReward: number; totalReward: number; referralReward: number }[] {
+	const filledEarnings: {
+		date: string
+		baseReward: number
+		totalReward: number
+		referralReward: number
+	}[] = []
 	const endDate = new Date()
 	const startDate = new Date(endDate)
 
@@ -454,7 +459,8 @@ export function fillMissingDates(
 		filledEarnings.push({
 			date: dateString,
 			baseReward: existingEarning ? existingEarning.baseReward : 0,
-			totalReward: existingEarning ? existingEarning.totalReward : 0
+			totalReward: existingEarning ? existingEarning.totalReward : 0,
+			referralReward: existingEarning ? existingEarning.referralReward || 0 : 0
 		})
 	}
 

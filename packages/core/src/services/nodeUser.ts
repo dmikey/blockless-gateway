@@ -189,7 +189,7 @@ export async function getUserReferrals(userId: string): Promise<{
 export async function getUserNodeEarnings(
 	userId: string,
 	period: 'daily' | 'monthly' = 'daily'
-): Promise<{ date: string; baseReward: number; totalReward: number }[]> {
+): Promise<{ date: string; baseReward: number; totalReward: number; referralReward: number }[]> {
 	try {
 		const startDate = new Date()
 		const dateFormat = period === 'daily' ? '%Y-%m-%d' : '%Y-%m'
@@ -200,24 +200,61 @@ export async function getUserNodeEarnings(
 			startDate.setMonth(startDate.getMonth() - 11)
 		}
 
-		const userNodes = await Nodes.find({ userId: { $regex: userId, $options: 'i' } })
-		const nodeIds = userNodes.map((node) => node._id)
+		// Get user's referral code
+		const user = await User.findOne({
+			ethAddress: { $regex: userId, $options: 'i' }
+		})
 
-		const earnings = await NodeRewards.aggregate([
-			{ $match: { nodeId: { $in: nodeIds }, timestamp: { $gte: startDate } } },
-			{
-				$group: {
-					_id: { $dateToString: { format: dateFormat, date: '$timestamp' } },
-					baseReward: { $sum: '$baseReward' },
-					totalReward: { $sum: '$totalReward' }
-				}
-			},
-			{ $sort: { _id: 1 } },
-			{ $project: { _id: 0, date: '$_id', baseReward: 1, totalReward: 1 } }
+		// Get referred users
+		const referredUsers = await User.find({
+			refBy: user?.refCode
+		})
+		const referredUserIds = referredUsers.map((user) => user.ethAddress)
+
+		// Get nodes for both direct user and referrals
+		const [userNodes, referralNodes] = await Promise.all([
+			Nodes.find({ userId: { $regex: userId, $options: 'i' } }),
+			Nodes.find({ userId: { $in: referredUserIds } })
 		])
 
+		const nodeIds = userNodes.map((node) => node._id)
+		const referralNodeIds = referralNodes.map((node) => node._id)
+
+		// Get earnings for both direct and referral nodes
+		const [directEarnings, referralEarnings] = await Promise.all([
+			NodeRewards.aggregate([
+				{ $match: { nodeId: { $in: nodeIds }, timestamp: { $gte: startDate } } },
+				{
+					$group: {
+						_id: { $dateToString: { format: dateFormat, date: '$timestamp' } },
+						baseReward: { $sum: '$baseReward' },
+						totalReward: { $sum: '$totalReward' }
+					}
+				},
+				{ $sort: { _id: 1 } },
+				{ $project: { _id: 0, date: '$_id', baseReward: 1, totalReward: 1 } }
+			]),
+			NodeRewards.aggregate([
+				{ $match: { nodeId: { $in: referralNodeIds }, timestamp: { $gte: startDate } } },
+				{
+					$group: {
+						_id: { $dateToString: { format: dateFormat, date: '$timestamp' } },
+						referralReward: { $sum: { $multiply: ['$baseReward', 0.1] } }
+					}
+				},
+				{ $sort: { _id: 1 } },
+				{ $project: { _id: 0, date: '$_id', referralReward: 1 } }
+			])
+		])
+
+		// Merge direct and referral earnings
+		const mergedEarnings = directEarnings.map((earning) => ({
+			...earning,
+			referralReward: referralEarnings.find((ref) => ref.date === earning.date)?.referralReward || 0
+		}))
+
 		// Fill in missing dates with zero earnings
-		const filledEarnings = fillMissingDates(earnings, period)
+		const filledEarnings = fillMissingDates(mergedEarnings, period)
 
 		return filledEarnings
 	} catch (error) {
