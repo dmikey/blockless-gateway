@@ -18,38 +18,69 @@ export async function getUserOverview(userId: string): Promise<{
 	allTimeReferralsReward: number
 }> {
 	try {
-		// Calculate start of today without using a library
 		const today = new Date()
 		today.setUTCHours(0, 0, 0, 0)
 
-		// Get the user's nodes
-		const userNodes = await Nodes.find({ userId: { $regex: userId, $options: 'i' } })
-		const nodeIds = userNodes.map((node) => node._id)
+		// Get user's referral code
+		const user = await User.findOne({
+			ethAddress: { $regex: userId, $options: 'i' }
+		})
 
-		// Get the rewards for today and all-time
-		const rewardsAggregate = await NodeRewards.aggregate([
-			{
-				$match: {
-					nodeId: { $in: nodeIds }
+		// Get referred users and their nodes
+		const referredUsers = await User.find({
+			refBy: user?.refCode
+		})
+		const referredUserIds = referredUsers.map((user) => user.ethAddress)
+		const [userNodes, referralNodes] = await Promise.all([
+			Nodes.find({ userId: { $regex: userId, $options: 'i' } }),
+			Nodes.find({ userId: { $in: referredUserIds } })
+		])
+
+		const nodeIds = userNodes.map((node) => node._id)
+		const referralNodeIds = referralNodes.map((node) => node._id)
+
+		// Get direct rewards and referral rewards in parallel
+		const [directRewards, referralRewards] = await Promise.all([
+			NodeRewards.aggregate([
+				{
+					$match: { nodeId: { $in: nodeIds } }
+				},
+				{
+					$group: {
+						_id: null,
+						todayBaseReward: {
+							$sum: {
+								$cond: [{ $gte: ['$timestamp', today] }, '$baseReward', 0]
+							}
+						},
+						todayTotalReward: {
+							$sum: {
+								$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
+							}
+						},
+						allTimeBaseReward: { $sum: '$baseReward' },
+						allTimeTotalReward: { $sum: '$totalReward' }
+					}
 				}
-			},
-			{
-				$group: {
-					_id: null,
-					todayBaseReward: {
-						$sum: {
-							$cond: [{ $gte: ['$timestamp', today] }, '$baseReward', 0]
+			]),
+			NodeRewards.aggregate([
+				{
+					$match: { nodeId: { $in: referralNodeIds } }
+				},
+				{
+					$group: {
+						_id: null,
+						todayReferralsReward: {
+							$sum: {
+								$cond: [{ $gte: ['$timestamp', today] }, { $multiply: ['$baseReward', 0.1] }, 0]
+							}
+						},
+						allTimeReferralsReward: {
+							$sum: { $multiply: ['$baseReward', 0.1] }
 						}
-					},
-					todayTotalReward: {
-						$sum: {
-							$cond: [{ $gte: ['$timestamp', today] }, '$totalReward', 0]
-						}
-					},
-					allTimeBaseReward: { $sum: '$baseReward' },
-					allTimeTotalReward: { $sum: '$totalReward' }
+					}
 				}
-			}
+			])
 		])
 
 		const {
@@ -57,11 +88,9 @@ export async function getUserOverview(userId: string): Promise<{
 			todayTotalReward = 0,
 			allTimeBaseReward = 0,
 			allTimeTotalReward = 0
-		} = rewardsAggregate[0] || {}
+		} = directRewards[0] || {}
 
-		// TODO: Implement referral reward calculation
-		const todayReferralsReward = 0
-		const allTimeReferralsReward = 0
+		const { todayReferralsReward = 0, allTimeReferralsReward = 0 } = referralRewards[0] || {}
 
 		return {
 			todayBaseReward,
