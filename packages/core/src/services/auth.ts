@@ -82,7 +82,7 @@ export async function verifyUserWalletSignature({
 	userWallet: UserWallet
 	signature: string | StdSignature
 	publicKey?: string
-}): Promise<boolean> {
+}): Promise<{ userId: string; isSignatureValid: boolean }> {
 	const user = await getUser(userWallet)
 	let msg = `unique nonce ${user.nonce}`
 
@@ -93,24 +93,31 @@ export async function verifyUserWalletSignature({
 
 			const decodedSig = decodeKeplrSignature(signature as StdSignature)
 
-			return verifyADR36Amino(
-				'bls',
-				userWallet.walletAddress,
-				Buffer.from(msg, 'utf8'),
-				decodedSig.pubkey,
-				decodedSig.signature
-			)
+			return {
+				userId: user._id.toString(),
+				isSignatureValid: verifyADR36Amino(
+					'bls',
+					userWallet.walletAddress,
+					Buffer.from(msg, 'utf8'),
+					decodedSig.pubkey,
+					decodedSig.signature
+				)
+			}
 
 		case 'martian':
 			if (!publicKey) throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
 
 			msg = `APTOS\nmessage: unique nonce ${user?.nonce}`
 
-			return nacl.sign.detached.verify(
-				new TextEncoder().encode(msg),
-				Buffer.from((signature as string).slice(2), 'hex'),
-				Buffer.from(publicKey.slice(2), 'hex')
-			)
+			return {
+				userId: user._id.toString(),
+				isSignatureValid: nacl.sign.detached.verify(
+					new TextEncoder().encode(msg),
+					Buffer.from((signature as string).slice(2), 'hex'),
+					Buffer.from(publicKey.slice(2), 'hex')
+				)
+			}
+
 		default:
 			const msgBufferHex = bufferToHex(Buffer.from(msg, 'utf8'))
 			const address = recoverPersonalSignature({
@@ -118,6 +125,9 @@ export async function verifyUserWalletSignature({
 				signature: signature as string
 			})
 
-			return address.toLowerCase() === userWallet.walletAddress.toLowerCase()
+			return {
+				userId: user._id.toString(),
+				isSignatureValid: address.toLowerCase() === userWallet.walletAddress.toLowerCase()
+			}
 	}
 }

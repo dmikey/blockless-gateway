@@ -11,7 +11,7 @@ export interface INodeModel extends IDocument {
 const NodeSchema = new mongoose.Schema(
 	{
 		pubKey: { type: String, required: true },
-		userId: { type: String, required: true },
+		userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 		ipAddress: { type: String, required: false }
 	},
 	{

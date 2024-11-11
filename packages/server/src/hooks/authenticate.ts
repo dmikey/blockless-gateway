@@ -12,6 +12,7 @@ declare module 'fastify' {
 declare module '@fastify/jwt' {
 	interface FastifyJWT {
 		user: {
+			userId: string
 			publicAddress: string
 			walletType: string
 		}

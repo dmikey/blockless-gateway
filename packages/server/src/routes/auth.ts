@@ -52,7 +52,7 @@ async function authSignAPI(request: AuthSignPostRequest) {
 	const userWallet = getUserWalletByType(walletType, publicAddress)
 
 	// Signature check
-	const isSignatureValid = await gatewayClient.auth.verifySignature({
+	const { isSignatureValid, userId } = await gatewayClient.auth.verifySignature({
 		userWallet,
 		signature,
 		publicKey
@@ -62,7 +62,11 @@ async function authSignAPI(request: AuthSignPostRequest) {
 
 	// Generate a JWT if signature is valid
 	const token = (this as FastifyInstance).jwt.sign(
-		{ publicAddress: userWallet.walletAddress, walletType: userWallet.walletType },
+		{
+			userId,
+			publicAddress: userWallet.walletAddress,
+			walletType: userWallet.walletType
+		},
 		{ expiresIn: '1w' }
 	)
 

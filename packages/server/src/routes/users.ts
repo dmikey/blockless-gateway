@@ -12,8 +12,8 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request) => {
-			const { publicAddress } = request.user
-			return gatewayClient.user.getEarnings(publicAddress, 'daily')
+			const { userId } = request.user
+			return gatewayClient.user.getEarnings(userId, 'daily')
 		}
 	)
 
@@ -23,8 +23,8 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request) => {
-			const { publicAddress } = request.user
-			return gatewayClient.user.getReferrals(publicAddress)
+			const { userId } = request.user
+			return gatewayClient.user.getReferrals(userId)
 		}
 	)
 
@@ -34,8 +34,8 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request) => {
-			const { publicAddress } = request.user
-			return gatewayClient.user.getLeaderboard(publicAddress)
+			const { userId } = request.user
+			return gatewayClient.user.getLeaderboard(userId)
 		}
 	)
 
@@ -45,8 +45,8 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request) => {
-			const { publicAddress } = request.user
-			return gatewayClient.user.getOverview(publicAddress)
+			const { userId } = request.user
+			return gatewayClient.user.getOverview(userId)
 		}
 	)
 

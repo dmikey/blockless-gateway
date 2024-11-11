@@ -18,8 +18,10 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeListRequest) => {
-			const { publicAddress } = request.user
-			return gatewayClient.nodes.list(publicAddress, request.query)
+			const { userId } = request.user
+
+			console.log('list userId', userId)
+			return gatewayClient.nodes.list(userId, request.query)
 		}
 	)
 
@@ -29,9 +31,11 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeGetRequest) => {
-			const { publicAddress } = request.user
+			const { userId } = request.user
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.get(publicAddress, nodePubKey)
+
+			console.log('get userId', userId)
+			return gatewayClient.nodes.get(userId, nodePubKey)
 		}
 	)
 
@@ -41,9 +45,9 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeGetRequest) => {
-			const { publicAddress } = request.user
+			const { userId } = request.user
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.getEarnings(publicAddress, nodePubKey)
+			return gatewayClient.nodes.getEarnings(userId, nodePubKey)
 		}
 	)
 
@@ -53,10 +57,10 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeRegisterRequest) => {
-			const { publicAddress } = request.user
+			const { userId } = request.user
 			const { nodePubKey } = request.params
 			const { ipAddress } = request.body
-			return gatewayClient.nodes.register(publicAddress, nodePubKey, { ipAddress })
+			return gatewayClient.nodes.register(userId, nodePubKey, { ipAddress })
 		}
 	)
 
@@ -66,9 +70,10 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeSessionRequest) => {
-			const { publicAddress } = request.user
+			const { userId } = request.user
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.startSession(publicAddress, nodePubKey)
+			console.log('startSession userId', userId)
+			return gatewayClient.nodes.startSession(userId, nodePubKey)
 		}
 	)
 
@@ -78,16 +83,16 @@ export const register = (server: FastifyInstance, opts, next) => {
 			constraints: { host: REGEX_HOST_MATCH }
 		},
 		async (request: NodeSessionRequest) => {
-			const { publicAddress } = request.user
+			const { userId } = request.user
 			const { nodePubKey } = request.params
-			return gatewayClient.nodes.endSession(publicAddress, nodePubKey)
+			return gatewayClient.nodes.endSession(userId, nodePubKey)
 		}
 	)
 
 	server.post('/:nodePubKey/ping', async (request: NodeSessionRequest) => {
-		const { publicAddress } = request.user
+		const { userId } = request.user
 		const { nodePubKey } = request.params
-		return gatewayClient.nodes.pingSession(publicAddress, nodePubKey)
+		return gatewayClient.nodes.pingSession(userId, nodePubKey)
 	})
 
 	next()

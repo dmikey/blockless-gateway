@@ -1,4 +1,5 @@
 import { createHash } from 'crypto'
+import mongoose from 'mongoose'
 
 import Nodes, { INodeModel } from '../models/node'
 import NodeRewards from '../models/nodeReward'
@@ -31,7 +32,7 @@ export async function listNodes(
 		today.setUTCHours(0, 0, 0, 0)
 
 		const nodes = await Nodes.aggregate([
-			{ $match: { userId: { $regex: userId, $options: 'i' } } },
+			{ $match: { userId: new mongoose.Types.ObjectId(userId) } },
 			{
 				$lookup: {
 					from: 'noderewards',
@@ -120,7 +121,7 @@ export async function getNode(
 		today.setUTCHours(0, 0, 0, 0)
 
 		const nodes = await Nodes.aggregate([
-			{ $match: { pubKey: nodePubKey, userId: { $regex: userId, $options: 'i' } } },
+			{ $match: { pubKey: nodePubKey, userId: new mongoose.Types.ObjectId(userId) } },
 			{
 				$lookup: {
 					from: 'noderewards',
@@ -202,7 +203,7 @@ export async function getNodeEarnings(
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
-			userId: { $regex: userId, $options: 'i' }
+			userId: new mongoose.Types.ObjectId(userId)
 		})
 
 		if (!node) {
@@ -259,12 +260,12 @@ export async function registerNode(
 		}
 
 		// Count existing nodes for the user
-		const nodeCount = await Nodes.countDocuments({ userId: { $regex: userId, $options: 'i' } })
+		const nodeCount = await Nodes.countDocuments({ userId: new mongoose.Types.ObjectId(userId) })
 
 		// Check if the node already exists
 		const existingNode = await Nodes.findOne({
 			pubKey: nodePubKey,
-			userId: { $regex: userId, $options: 'i' }
+			userId: new mongoose.Types.ObjectId(userId)
 		})
 
 		// If the node doesn't exist and the user has 5 or more nodes, throw an error
@@ -273,8 +274,8 @@ export async function registerNode(
 		}
 
 		const node = await Nodes.findOneAndUpdate(
-			{ pubKey: nodePubKey, userId: { $regex: userId, $options: 'i' } },
-			{ ...data, userId },
+			{ pubKey: nodePubKey, userId: new mongoose.Types.ObjectId(userId) },
+			{ ...data, userId: new mongoose.Types.ObjectId(userId) },
 			{ upsert: true, new: true, setDefaultsOnInsert: true }
 		)
 
@@ -298,7 +299,7 @@ export async function startNodeSession(
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
-			userId: { $regex: userId, $options: 'i' }
+			userId: new mongoose.Types.ObjectId(userId)
 		})
 
 		if (!node) {
@@ -335,7 +336,7 @@ export async function endNodeSession(
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
-			userId: { $regex: userId, $options: 'i' }
+			userId: new mongoose.Types.ObjectId(userId)
 		})
 
 		if (!node) {
@@ -371,7 +372,7 @@ export async function pingNodeSession(
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
-			userId: { $regex: userId, $options: 'i' }
+			userId: new mongoose.Types.ObjectId(userId)
 		})
 
 		if (!node) {
@@ -534,7 +535,7 @@ export async function processNodeRewards(): Promise<string[]> {
 					from: 'users',
 					let: { userId: '$userId' },
 					pipeline: [
-						{ $match: { $expr: { $eq: ['$ethAddress', '$$userId'] } } },
+						{ $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
 						{ $project: { refBy: 1, isTwitterConnected: 1, isDiscordConnected: 1 } }
 					],
 					as: 'user'

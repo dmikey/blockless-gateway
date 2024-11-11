@@ -1,3 +1,5 @@
+import mongoose from 'mongoose'
+
 import Nodes from '../models/node'
 import NodeRewards from '../models/nodeReward'
 import User from '../models/user'
@@ -22,17 +24,15 @@ export async function getUserOverview(userId: string): Promise<{
 		today.setUTCHours(0, 0, 0, 0)
 
 		// Get user's referral code
-		const user = await User.findOne({
-			ethAddress: { $regex: userId, $options: 'i' }
-		})
+		const user = await User.findById(userId)
 
 		// Get referred users and their nodes
 		const referredUsers = await User.find({
 			refBy: user?.refCode
 		})
-		const referredUserIds = referredUsers.map((user) => user.ethAddress)
+		const referredUserIds = referredUsers.map((user) => user._id)
 		const [userNodes, referralNodes] = await Promise.all([
-			Nodes.find({ userId: { $regex: userId, $options: 'i' } }),
+			Nodes.find({ userId: new mongoose.Types.ObjectId(userId) }),
 			Nodes.find({ userId: { $in: referredUserIds } })
 		])
 
@@ -119,16 +119,14 @@ export async function getUserReferrals(userId: string): Promise<{
 	totalReferralTime: number
 }> {
 	try {
-		const user = await User.findOne({
-			ethAddress: { $regex: userId, $options: 'i' }
-		})
+		const user = await User.findById(userId)
 
 		const referrals = await User.find({
 			refBy: user?.refCode
 		})
 
 		// Get all nodes belonging to referred users
-		const referralUserIds = referrals.map((referral) => referral.ethAddress)
+		const referralUserIds = referrals.map((referral) => referral._id.toString())
 		const referralNodes = await Nodes.find({
 			userId: { $in: referralUserIds }
 		})
@@ -170,7 +168,7 @@ export async function getUserReferrals(userId: string): Promise<{
 		const referralStats = await Promise.all(
 			referrals.map(async (referral) => {
 				const userNodes = await Nodes.find({
-					userId: { $regex: referral.ethAddress, $options: 'i' }
+					userId: { $eq: referral._id }
 				})
 				const userNodeIds = userNodes.map((node) => node._id)
 
@@ -230,19 +228,17 @@ export async function getUserNodeEarnings(
 		}
 
 		// Get user's referral code
-		const user = await User.findOne({
-			ethAddress: { $regex: userId, $options: 'i' }
-		})
+		const user = await User.findById(userId)
 
 		// Get referred users
 		const referredUsers = await User.find({
 			refBy: user?.refCode
 		})
-		const referredUserIds = referredUsers.map((user) => user.ethAddress)
+		const referredUserIds = referredUsers.map((user) => user._id)
 
 		// Get nodes for both direct user and referrals
 		const [userNodes, referralNodes] = await Promise.all([
-			Nodes.find({ userId: { $regex: userId, $options: 'i' } }),
+			Nodes.find({ userId: new mongoose.Types.ObjectId(userId) }),
 			Nodes.find({ userId: { $in: referredUserIds } })
 		])
 
