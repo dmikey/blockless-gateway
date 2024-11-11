@@ -19,6 +19,7 @@ export type NodeRegisterRequest = FastifyRequest<{
 	}
 	Body: {
 		ipAddress: string
+		hardwareId: string
 	}
 }>
 

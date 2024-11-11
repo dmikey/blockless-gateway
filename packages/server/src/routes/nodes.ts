@@ -20,7 +20,6 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request: NodeListRequest) => {
 			const { userId } = request.user
 
-			console.log('list userId', userId)
 			return gatewayClient.nodes.list(userId, request.query)
 		}
 	)
@@ -33,8 +32,6 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request: NodeGetRequest) => {
 			const { userId } = request.user
 			const { nodePubKey } = request.params
-
-			console.log('get userId', userId)
 			return gatewayClient.nodes.get(userId, nodePubKey)
 		}
 	)
@@ -59,8 +56,11 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request: NodeRegisterRequest) => {
 			const { userId } = request.user
 			const { nodePubKey } = request.params
-			const { ipAddress } = request.body
-			return gatewayClient.nodes.register(userId, nodePubKey, { ipAddress })
+			const { ipAddress, hardwareId } = request.body
+			return gatewayClient.nodes.register(userId, nodePubKey, {
+				ipAddress,
+				hardwareId
+			})
 		}
 	)
 
@@ -72,7 +72,6 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request: NodeSessionRequest) => {
 			const { userId } = request.user
 			const { nodePubKey } = request.params
-			console.log('startSession userId', userId)
 			return gatewayClient.nodes.startSession(userId, nodePubKey)
 		}
 	)
