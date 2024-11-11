@@ -20,6 +20,9 @@ export const AuthChallengePostSchema = {
 		aptosAddress: {
 			type: 'string'
 		},
+		solanaAddress: {
+			type: 'string'
+		},
 		refBy: {
 			type: 'string'
 		},
@@ -30,7 +33,8 @@ export const AuthChallengePostSchema = {
 	anyOf: [
 		{ required: ['ethAddress'] },
 		{ required: ['cosmosAddress'] },
-		{ required: ['aptosAddress'] }
+		{ required: ['aptosAddress'] },
+		{ required: ['solanaAddress'] }
 	],
 	additionalProperties: false
 }
@@ -50,7 +54,7 @@ export const AuthSignPostSchema = {
 	properties: {
 		walletType: {
 			type: 'string',
-			enum: ['eth', 'metamask', 'keplr', 'martian'],
+			enum: ['eth', 'metamask', 'keplr', 'martian', 'solana'],
 			default: 'eth'
 		},
 		signature: {

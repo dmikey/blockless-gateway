@@ -32,6 +32,10 @@ export function getUserWallet(userWalletRequest: UserWalletRequest): UserWallet 
 		key = 'aptosAddress'
 		type = 'martian'
 		address = userWalletRequest.aptosAddress
+	} else if (userWalletRequest.solanaAddress) {
+		key = 'solanaAddress'
+		type = 'solana'
+		address = userWalletRequest.solanaAddress
 	}
 
 	if (!key || !type || !address) throw new BaseErrors.ERR_USER_WALLET_NOT_FOUND()

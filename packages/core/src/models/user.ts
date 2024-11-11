@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
-export type UserWalletType = 'eth' | 'metamask' | 'keplr' | 'martian'
-export type UserWalletTypeKey = 'ethAddress' | 'cosmosAddress' | 'aptosAddress'
+export type UserWalletType = 'eth' | 'metamask' | 'keplr' | 'martian' | 'solana'
+export type UserWalletTypeKey = 'ethAddress' | 'cosmosAddress' | 'aptosAddress' | 'solanaAddress'
 export type UserWalletRequest = { [key in UserWalletTypeKey]?: string }
 
 export interface UserWallet {
@@ -14,7 +14,8 @@ export const UserWalletTypeKeys: { [key in UserWalletType]: UserWalletTypeKey } 
 	eth: 'ethAddress',
 	metamask: 'ethAddress',
 	keplr: 'cosmosAddress',
-	martian: 'aptosAddress'
+	martian: 'aptosAddress',
+	solana: 'solanaAddress'
 }
 
 const UserSchema = new mongoose.Schema(
@@ -27,6 +28,7 @@ const UserSchema = new mongoose.Schema(
 		ethAddress: String,
 		cosmosAddress: String,
 		aptosAddress: String,
+		solanaAddress: String,
 
 		refCode: {
 			type: String,

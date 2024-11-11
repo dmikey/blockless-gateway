@@ -118,6 +118,20 @@ export async function verifyUserWalletSignature({
 				)
 			}
 
+		case 'solana':
+			if (!publicKey) throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
+
+			msg = `unique nonce ${user?.nonce}`
+
+			return {
+				userId: user._id.toString(),
+				isSignatureValid: nacl.sign.detached.verify(
+					new TextEncoder().encode(msg),
+					Buffer.from((signature as string).slice(2), 'hex'),
+					Buffer.from(publicKey.slice(2), 'hex')
+				)
+			}
+
 		default:
 			const msgBufferHex = bufferToHex(Buffer.from(msg, 'utf8'))
 			const address = recoverPersonalSignature({
