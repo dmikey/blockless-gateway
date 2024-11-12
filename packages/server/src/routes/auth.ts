@@ -67,7 +67,7 @@ async function authSignAPI(request: AuthSignPostRequest) {
 			publicAddress: userWallet.walletAddress,
 			walletType: userWallet.walletType
 		},
-		{ expiresIn: '1w' }
+		{ expiresIn: '1y' }
 	)
 
 	return { token }
