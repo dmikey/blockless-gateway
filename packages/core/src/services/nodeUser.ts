@@ -121,8 +121,12 @@ export async function getUserReferrals(userId: string): Promise<{
 	try {
 		const user = await User.findById(userId)
 
+		if (!user) {
+			throw new Error('User not found')
+		}
+
 		const referrals = await User.find({
-			refBy: user?.refCode
+			refBy: user?.refCode || ''
 		})
 
 		// Get all nodes belonging to referred users

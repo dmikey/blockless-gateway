@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import Nodes, { INodeModel } from '../models/node'
 import NodeRewards from '../models/nodeReward'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
+import User from '../models/user'
 
 /**
  * List all nodes for a user
@@ -257,6 +258,12 @@ export async function registerNode(
 	try {
 		if (!nodePubKey) {
 			throw new Error('Public key is required to register a node')
+		}
+
+		// Check if the user exists
+		const user = await User.findById(userId)
+		if (!user) {
+			throw new Error('User not found')
 		}
 
 		// Count existing nodes for the user
