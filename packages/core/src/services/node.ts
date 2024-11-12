@@ -262,9 +262,11 @@ export async function registerNode(
 
 		// Check if the user exists
 		const user = await User.findById(userId)
-		if (!user) {
-			throw new Error('User not found')
-		}
+		// if (!user) {
+		// 	throw new Error('User not found')
+		// }
+
+		console.log('register node user', userId, user)
 
 		// Count existing nodes for the user
 		const nodeCount = await Nodes.countDocuments({ userId: new mongoose.Types.ObjectId(userId) })
@@ -288,6 +290,7 @@ export async function registerNode(
 
 		return node
 	} catch (error) {
+		console.log('register node error', error)
 		throw new Error('Failed to register node')
 	}
 }
