@@ -5,8 +5,8 @@ import fastifyMultipart from '@fastify/multipart'
 import 'dotenv/config'
 import fastify from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
-import { schedule as cronSchedule } from 'node-cron'
 
+// import { schedule as cronSchedule } from 'node-cron'
 import gatewayUI from '@blockless/gateway-ui'
 
 import { API_PATH, REGEX_HOST_MATCH } from './constants'
@@ -19,7 +19,8 @@ import { register as registerNodes } from './routes/nodes'
 import { register as registerRegistry } from './routes/registry'
 import { register as registerUsers } from './routes/users'
 import { EnvSchema } from './schema/env'
-import gatewayClient from './utils/gatewayClient'
+
+// import gatewayClient from './utils/gatewayClient'
 
 // Create the server
 const server = fastify({
@@ -66,26 +67,26 @@ server.register(registerNodes, { prefix: `${API_PATH}/nodes` })
 server.register(registerUsers, { prefix: `${API_PATH}/users` })
 
 // Add cron job
-cronSchedule(
-	'*/10 * * * *',
-	async () => {
-		const updatedNodeIds = await gatewayClient.nodesAdmin.processNodeRewards()
-		console.log('Updated node rewards: ', updatedNodeIds)
-	},
-	{
-		scheduled: true,
-		timezone: 'UTC'
-	}
-)
+// cronSchedule(
+// 	'*/10 * * * *',
+// 	async () => {
+// 		const updatedNodeIds = await gatewayClient.nodesAdmin.processNodeRewards()
+// 		console.log('Updated node rewards: ', updatedNodeIds)
+// 	},
+// 	{
+// 		scheduled: true,
+// 		timezone: 'UTC'
+// 	}
+// )
 
-cronSchedule(
-	'*/2 * * * *',
-	async () => {
-		await gatewayClient.nodesAdmin.processRemovalDanglingNodes()
-		console.log('Removed dangling nodes')
-	},
-	{ scheduled: true, timezone: 'UTC' }
-)
+// cronSchedule(
+// 	'*/2 * * * *',
+// 	async () => {
+// 		await gatewayClient.nodesAdmin.processRemovalDanglingNodes()
+// 		console.log('Removed dangling nodes')
+// 	},
+// 	{ scheduled: true, timezone: 'UTC' }
+// )
 
 // Run the server
 server.listen(
