@@ -119,13 +119,10 @@ export async function verifyUserWalletSignature({
 			}
 
 		case 'solana':
-			console.log('solana verify start')
 			if (!publicKey) throw new BaseErrors.ERR_USER_SIGNATURE_MISMATCH()
 
 			let isSignatureValid = true
 			msg = `unique nonce ${user?.nonce}`
-
-			console.log('solana verify start 2')
 
 			try {
 				isSignatureValid = nacl.sign.detached.verify(
@@ -134,11 +131,8 @@ export async function verifyUserWalletSignature({
 					Buffer.from(publicKey.slice(2), 'hex')
 				)
 			} catch (error) {
-				console.log('sol verify error', error)
 				isSignatureValid = false
 			}
-
-			console.log('solana verify end', isSignatureValid)
 
 			return {
 				userId: user._id.toString(),

@@ -28,6 +28,18 @@ export const register = (server: FastifyInstance, opts, next) => {
 		}
 	)
 
+	server.patch(
+		'/referrals',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { userId } = request.user
+			const { refCode } = request.body as { refCode: string }
+			return gatewayClient.user.updateReferral(userId, refCode)
+		}
+	)
+
 	server.get(
 		'/leaderboard',
 		{
