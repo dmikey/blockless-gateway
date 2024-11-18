@@ -10,7 +10,8 @@ export interface INodePingModel extends IDocument {
 const NodePingSchema = new mongoose.Schema(
 	{
 		timestamp: { type: Date, required: true },
-		nodeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Node', required: true }
+		nodeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Node', required: true },
+		isB7SConnected: { type: Boolean, required: false }
 	},
 	{
 		timeseries: {
