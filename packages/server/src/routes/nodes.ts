@@ -91,7 +91,11 @@ export const register = (server: FastifyInstance, opts, next) => {
 	server.post('/:nodePubKey/ping', async (request: NodeSessionRequest) => {
 		const { userId } = request.user
 		const { nodePubKey } = request.params
-		return gatewayClient.nodes.pingSession(userId, nodePubKey)
+		const { isB7SConnected } = request.body
+
+		return gatewayClient.nodes.pingSession(userId, nodePubKey, {
+			isB7SConnected
+		})
 	})
 
 	next()

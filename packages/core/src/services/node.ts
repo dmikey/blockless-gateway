@@ -378,7 +378,10 @@ export async function endNodeSession(
  */
 export async function pingNodeSession(
 	userId: string,
-	nodePubKey: string
+	nodePubKey: string,
+	metadata?: {
+		isB7SConnected?: boolean
+	}
 ): Promise<INodePingModel | null> {
 	try {
 		const node = await Nodes.findOne({
@@ -390,7 +393,11 @@ export async function pingNodeSession(
 			throw new Error('Node not found')
 		}
 
-		const ping = await NodePings.create({ nodeId: node._id, timestamp: new Date() })
+		const ping = await NodePings.create({
+			nodeId: node._id,
+			timestamp: new Date(),
+			isB7SConnected: metadata?.isB7SConnected ?? false
+		})
 
 		return ping
 	} catch (error) {
