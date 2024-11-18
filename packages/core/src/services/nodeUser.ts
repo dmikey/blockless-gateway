@@ -238,12 +238,12 @@ export async function updateUserReferral(
 		}
 
 		// Only update if user doesn't already have a referral code
-		if (!user.refBy) {
-			await User.findByIdAndUpdate(userId, { refBy: refCode })
-			return { updated: true }
+		if (user.refBy) {
+			throw new Error('User already has a referral code')
 		}
 
-		return { updated: false }
+		await User.findByIdAndUpdate(userId, { refBy: refCode })
+		return { updated: true }
 	} catch (error) {
 		console.error('Failed to update user referral:', error)
 		throw new Error('Failed to update user referral')

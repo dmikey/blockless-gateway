@@ -28,7 +28,7 @@ export const register = (server: FastifyInstance, opts, next) => {
 		}
 	)
 
-	server.patch(
+	server.post(
 		'/referrals',
 		{
 			constraints: { host: REGEX_HOST_MATCH }
