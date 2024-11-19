@@ -27,4 +27,7 @@ export type NodeSessionRequest = FastifyRequest<{
 	Params: {
 		nodePubKey: string
 	}
+	Body: {
+		isB7SConnected: boolean
+	}
 }>

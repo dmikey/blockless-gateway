@@ -2,6 +2,7 @@ import { createHash } from 'crypto'
 import mongoose from 'mongoose'
 
 import Nodes, { INodeModel } from '../models/node'
+import NodePings, { INodePingModel } from '../models/nodePing'
 import NodeRewards from '../models/nodeReward'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
 import User from '../models/user'
@@ -377,8 +378,11 @@ export async function endNodeSession(
  */
 export async function pingNodeSession(
 	userId: string,
-	nodePubKey: string
-): Promise<INodeSessionModel | null> {
+	nodePubKey: string,
+	metadata?: {
+		isB7SConnected?: boolean
+	}
+): Promise<INodePingModel | null> {
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
@@ -389,26 +393,13 @@ export async function pingNodeSession(
 			throw new Error('Node not found')
 		}
 
-		const now = new Date()
+		const ping = await NodePings.create({
+			nodeId: node._id,
+			timestamp: new Date(),
+			isB7SConnected: metadata?.isB7SConnected ?? false
+		})
 
-		// Find the active session for the node and update lastPingAt and pings
-		const updatedSession = await NodeSessions.findOneAndUpdate(
-			{
-				nodeId: node._id,
-				endAt: { $exists: false }
-			},
-			{
-				$set: { lastPingAt: now },
-				$push: { pings: { timestamp: now } }
-			},
-			{ new: true }
-		)
-
-		if (!updatedSession) {
-			throw new Error('No active session found for this node')
-		}
-
-		return updatedSession
+		return ping
 	} catch (error) {
 		console.error('Failed to ping node session:', error)
 		throw new Error('Failed to ping node session')
