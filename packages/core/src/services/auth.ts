@@ -47,6 +47,22 @@ export async function generateUserChallenge(
 	userLookupQuery[walletKey] = { $regex: new RegExp(walletAddress, 'i') }
 	userData[walletKey] = walletAddress
 
+	// Lookup user by metadata email
+	if (data && data.metadata && data.metadata.email && data.metadata.typeOfLogin) {
+		const usersByEmail = await User.find({
+			'metadata.email': data.metadata.email
+		})
+
+		if (
+			usersByEmail.length === 1 &&
+			usersByEmail[0].metadata &&
+			usersByEmail[0].metadata.typeOfLogin !== data.metadata?.typeOfLogin
+		) {
+			console.log('user already exists with different type of login', data.metadata)
+			throw new Error('User already exists with different type of login.')
+		}
+	}
+
 	const userExists = await User.findOne(userLookupQuery)
 	if (!userExists) {
 		if (data && data.refBy) {
