@@ -58,6 +58,7 @@ export async function generateUserChallenge(
 			usersByEmail[0].metadata &&
 			usersByEmail[0].metadata.typeOfLogin !== data.metadata?.typeOfLogin
 		) {
+			console.log('user already exists with different type of login', data.metadata)
 			throw new Error('User already exists with different type of login.')
 		}
 	}
