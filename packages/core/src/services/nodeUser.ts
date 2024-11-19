@@ -211,6 +211,46 @@ export async function getUserReferrals(userId: string): Promise<{
 }
 
 /**
+ * Update user referral code
+ *
+ * @param userId
+ * @param refCode
+ * @returns
+ */
+export async function updateUserReferral(
+	userId: string,
+	refCode: string
+): Promise<{ updated: boolean }> {
+	try {
+		const [user, referrer] = await Promise.all([User.findById(userId), User.findOne({ refCode })])
+
+		if (!user) {
+			throw new Error('User not found')
+		}
+
+		if (!referrer) {
+			throw new Error('Invalid referral code')
+		}
+
+		// Prevent self-referral
+		if (user._id.toString() === referrer._id.toString()) {
+			throw new Error('Cannot refer yourself')
+		}
+
+		// Only update if user doesn't already have a referral code
+		if (user.refBy) {
+			throw new Error('User already has a referral code')
+		}
+
+		await User.findByIdAndUpdate(userId, { refBy: refCode })
+		return { updated: true }
+	} catch (error) {
+		console.error('Failed to update user referral:', error)
+		throw new Error('Failed to update user referral')
+	}
+}
+
+/**
  * Get earnings for a user's nodes for a given period
  *
  * @param userId

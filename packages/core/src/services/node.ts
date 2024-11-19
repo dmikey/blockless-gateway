@@ -267,8 +267,6 @@ export async function registerNode(
 			throw new Error('User not found')
 		}
 
-		console.log('register node user', userId, user)
-
 		// Count existing nodes for the user
 		const nodeCount = await Nodes.countDocuments({ userId: new mongoose.Types.ObjectId(userId) })
 
@@ -555,8 +553,6 @@ export async function processNodeRewards(): Promise<string[]> {
 			const twitterBoost = hasConnectedTwitter ? 0.05 : 0 // 5% boost if connected to Twitter
 			const discordBoost = hasConnectedDiscord ? 0.05 : 0 // 5% boost if connected to Discord
 			const totalBoost = 1 + (referralBoost + twitterBoost + discordBoost)
-
-			console.log('node', node, referralBoost, twitterBoost, discordBoost, totalBoost)
 
 			const baseReward = 10
 
