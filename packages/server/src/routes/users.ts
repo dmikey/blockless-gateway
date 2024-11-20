@@ -36,7 +36,12 @@ export const register = (server: FastifyInstance, opts, next) => {
 		async (request) => {
 			const { userId } = request.user
 			const { refCode } = request.body as { refCode: string }
-			return gatewayClient.user.updateReferral(userId, refCode)
+			if (gatewayClient.user.updateReferral) {
+				return gatewayClient.user.updateReferral(userId, refCode)
+			} else {
+				// Handle the case where updateReferral does not exist
+				console.error('updateReferral method does not exist on gatewayClient.user')
+			}
 		}
 	)
 
