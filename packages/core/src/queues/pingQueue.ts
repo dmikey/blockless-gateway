@@ -1,21 +1,9 @@
 import Bull from 'bull'
 
 import NodePings from '../models/nodePing'
+import { createQueue } from './queueUtils'
 
-const pingQueue = new Bull('node-pings', {
-	redis: {
-		host: process.env.REDIS_HOST || '127.0.0.1',
-		port: parseInt(process.env.REDIS_PORT, 10) || 6379
-	},
-	defaultJobOptions: {
-		removeOnComplete: true,
-		attempts: 3,
-		backoff: {
-			type: 'exponential',
-			delay: 5000
-		}
-	}
-})
+const pingQueue = createQueue('node-pings')
 
 pingQueue.process(async (job) => {
 	const { nodeId, metadata } = job.data
