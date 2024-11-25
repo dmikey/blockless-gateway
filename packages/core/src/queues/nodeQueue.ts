@@ -8,11 +8,11 @@ const nodeQueue = new Bull('node-registrations', {
 		port: parseInt(process.env.REDIS_PORT, 10) || 6379
 	},
 	defaultJobOptions: {
-		removeOnComplete: true, // Automatically remove completed jobs
-		attempts: 3, // Retry failed jobs up to 3 times
+		removeOnComplete: true,
+		attempts: 3,
 		backoff: {
 			type: 'exponential',
-			delay: 5000 // Initial delay of 5 seconds between retries
+			delay: 5000
 		}
 	}
 })
