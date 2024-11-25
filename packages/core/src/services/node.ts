@@ -6,6 +6,7 @@ import NodePings, { INodePingModel } from '../models/nodePing'
 import NodeRewards from '../models/nodeReward'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
 import User from '../models/user'
+import nodeQueue from '../queues/nodeQueue'
 
 /**
  * List all nodes for a user
@@ -70,8 +71,12 @@ export async function listNodes(
 			},
 			{
 				$addFields: {
-					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] },
-					todayReward: { $ifNull: [{ $arrayElemAt: ['$rewards.todayReward', 0] }, 0] }
+					totalReward: {
+						$ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0]
+					},
+					todayReward: {
+						$ifNull: [{ $arrayElemAt: ['$rewards.todayReward', 0] }, 0]
+					}
 				}
 			},
 			{ $project: { rewards: 0 } },
@@ -123,7 +128,12 @@ export async function getNode(
 		today.setUTCHours(0, 0, 0, 0)
 
 		const nodes = await Nodes.aggregate([
-			{ $match: { pubKey: nodePubKey, userId: new mongoose.Types.ObjectId(userId) } },
+			{
+				$match: {
+					pubKey: nodePubKey,
+					userId: new mongoose.Types.ObjectId(userId)
+				}
+			},
 			{
 				$lookup: {
 					from: 'noderewards',
@@ -159,8 +169,12 @@ export async function getNode(
 			},
 			{
 				$addFields: {
-					totalReward: { $ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0] },
-					todayReward: { $ifNull: [{ $arrayElemAt: ['$rewards.todayReward', 0] }, 0] }
+					totalReward: {
+						$ifNull: [{ $arrayElemAt: ['$rewards.totalReward', 0] }, 0]
+					},
+					todayReward: {
+						$ifNull: [{ $arrayElemAt: ['$rewards.todayReward', 0] }, 0]
+					}
 				}
 			},
 			{ $project: { rewards: 0 } }
@@ -268,7 +282,9 @@ export async function registerNode(
 		}
 
 		// Count existing nodes for the user
-		const nodeCount = await Nodes.countDocuments({ userId: new mongoose.Types.ObjectId(userId) })
+		const nodeCount = await Nodes.countDocuments({
+			userId: new mongoose.Types.ObjectId(userId)
+		})
 
 		// Check if the node already exists
 		const existingNode = await Nodes.findOne({
@@ -281,13 +297,17 @@ export async function registerNode(
 			throw new Error('Maximum number of nodes (5) reached for this account')
 		}
 
-		const node = await Nodes.findOneAndUpdate(
-			{ pubKey: nodePubKey, userId: new mongoose.Types.ObjectId(userId) },
-			{ ...data, userId: new mongoose.Types.ObjectId(userId) },
-			{ upsert: true, new: true, setDefaultsOnInsert: true }
-		)
+		// Add node registration job to the queue
+		await nodeQueue.add({ nodeData: { userId, nodePubKey, data } })
 
-		return node
+		return (
+			existingNode ||
+			new Nodes({
+				pubKey: nodePubKey,
+				userId: new mongoose.Types.ObjectId(userId),
+				...data
+			})
+		)
 	} catch (error) {
 		console.log('register node error', error)
 		throw new Error('Failed to register node')
@@ -322,7 +342,10 @@ export async function startNodeSession(
 		)
 
 		// Create a new session
-		const session = await NodeSessions.create({ nodeId: node._id, startAt: new Date() })
+		const session = await NodeSessions.create({
+			nodeId: node._id,
+			startAt: new Date()
+		})
 
 		return session
 	} catch (error) {
@@ -428,9 +451,19 @@ export async function getPublicNodeNonce(nodePubKey: string, secret: string): Pr
  * Helper function to fill in missing dates with zero earnings
  */
 export function fillMissingDates(
-	rewards: { date: string; baseReward: number; totalReward: number; referralReward?: number }[],
+	rewards: {
+		date: string
+		baseReward: number
+		totalReward: number
+		referralReward?: number
+	}[],
 	period: 'daily' | 'monthly'
-): { date: string; baseReward: number; totalReward: number; referralReward: number }[] {
+): {
+	date: string
+	baseReward: number
+	totalReward: number
+	referralReward: number
+}[] {
 	const filledEarnings: {
 		date: string
 		baseReward: number
@@ -509,7 +542,10 @@ export async function processNodeRewards(): Promise<string[]> {
 					endAt: { $exists: false },
 					$or: [
 						{ lastPingAt: { $gte: tenMinutesAgo } },
-						{ lastPingAt: { $exists: false }, startAt: { $gte: tenMinutesAgo } }
+						{
+							lastPingAt: { $exists: false },
+							startAt: { $gte: tenMinutesAgo }
+						}
 					]
 				}
 			},
@@ -535,7 +571,13 @@ export async function processNodeRewards(): Promise<string[]> {
 					let: { userId: '$userId' },
 					pipeline: [
 						{ $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-						{ $project: { refBy: 1, isTwitterConnected: 1, isDiscordConnected: 1 } }
+						{
+							$project: {
+								refBy: 1,
+								isTwitterConnected: 1,
+								isDiscordConnected: 1
+							}
+						}
 					],
 					as: 'user'
 				}
