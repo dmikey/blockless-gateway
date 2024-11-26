@@ -404,7 +404,7 @@ export async function pingNodeSession(
 	metadata?: {
 		isB7SConnected?: boolean
 	}
-): Promise<INodePingModel | null> {
+): Promise<INodeModel | null> {
 	try {
 		const cacheKey = `node:${userId}:${nodePubKey}`
 		const cachedNode = await redis.get(cacheKey)
@@ -422,13 +422,8 @@ export async function pingNodeSession(
 			throw new Error('Node not found')
 		}
 
-		await redis.set(cacheKey, JSON.stringify(node), 'EX', 3600) // Cache for 1 hour
-
-		// const ping = await NodePings.create({
-		// 	nodeId: node._id,
-		// 	timestamp: new Date(),
-		// 	isB7SConnected: metadata?.isB7SConnected ?? false,
-		// });
+		// Cache for 1 hour
+		await redis.set(cacheKey, JSON.stringify(node), 'EX', 3600)
 
 		await pingQueue.add({ nodeId: node._id, metadata })
 
