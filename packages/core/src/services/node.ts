@@ -7,6 +7,7 @@ import NodeRewards from '../models/nodeReward'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
 import User from '../models/user'
 import nodeQueue from '../queues/nodeQueue'
+import pingQueue from '../queues/pingQueue'
 
 /**
  * List all nodes for a user
@@ -414,13 +415,15 @@ export async function pingNodeSession(
 			throw new Error('Node not found')
 		}
 
-		const ping = await NodePings.create({
-			nodeId: node._id,
-			timestamp: new Date(),
-			isB7SConnected: metadata?.isB7SConnected ?? false
-		})
+		// const ping = await NodePings.create({
+		// 	nodeId: node._id,
+		// 	timestamp: new Date(),
+		// 	isB7SConnected: metadata?.isB7SConnected ?? false
+		// })
 
-		return ping
+		await pingQueue.add({ nodeId: node._id, metadata })
+
+		return null
 	} catch (error) {
 		console.error('Failed to ping node session:', error)
 		throw new Error('Failed to ping node session')
