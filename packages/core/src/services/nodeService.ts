@@ -39,7 +39,7 @@ export async function pingNodeSession(
 	metadata?: {
 		isB7SConnected?: boolean
 	}
-): Promise<INodePingModel | null> {
+): Promise<INodeModel | null> {
 	try {
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,

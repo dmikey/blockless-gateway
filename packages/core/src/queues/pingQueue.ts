@@ -1,5 +1,3 @@
-import Bull from 'bull'
-
 import NodePings from '../models/nodePing'
 import { createQueue } from './queueUtils'
 

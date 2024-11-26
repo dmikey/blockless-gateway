@@ -1,5 +1,3 @@
-import Bull from 'bull'
-
 import { registerNodeInDatabase } from '../services/nodeService'
 import { createQueue } from './queueUtils'
 
