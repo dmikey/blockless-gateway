@@ -2,12 +2,12 @@ import { createHash } from 'crypto'
 import mongoose from 'mongoose'
 
 import Nodes, { INodeModel } from '../models/node'
-import NodePings, { INodePingModel } from '../models/nodePing'
 import NodeRewards from '../models/nodeReward'
 import NodeSessions, { INodeSessionModel } from '../models/nodeSession'
 import User from '../models/user'
 import nodeQueue from '../queues/nodeQueue'
 import pingQueue from '../queues/pingQueue'
+import redis from './redisClient'
 
 /**
  * List all nodes for a user
@@ -406,6 +406,13 @@ export async function pingNodeSession(
 	}
 ): Promise<INodePingModel | null> {
 	try {
+		const cacheKey = `node:${userId}:${nodePubKey}`
+		const cachedNode = await redis.get(cacheKey)
+
+		if (cachedNode) {
+			return JSON.parse(cachedNode)
+		}
+
 		const node = await Nodes.findOne({
 			pubKey: nodePubKey,
 			userId: new mongoose.Types.ObjectId(userId)
@@ -415,11 +422,13 @@ export async function pingNodeSession(
 			throw new Error('Node not found')
 		}
 
+		await redis.set(cacheKey, JSON.stringify(node), 'EX', 3600) // Cache for 1 hour
+
 		// const ping = await NodePings.create({
 		// 	nodeId: node._id,
 		// 	timestamp: new Date(),
-		// 	isB7SConnected: metadata?.isB7SConnected ?? false
-		// })
+		// 	isB7SConnected: metadata?.isB7SConnected ?? false,
+		// });
 
 		await pingQueue.add({ nodeId: node._id, metadata })
 

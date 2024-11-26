@@ -1,45 +1,45 @@
-import NodePings from "../models/nodePing";
-import { createQueue } from "./queueUtils";
+import NodePings from '../models/nodePing'
+import { createQueue } from './queueUtils'
 
-const pingQueue = createQueue("node-pings");
+const pingQueue = createQueue('node-pings')
 
-const batchSize = 100; // Define the batch size
+const batchSize = 100 // Define the batch size
 
 interface Ping {
-	nodeId: string;
-	timestamp: Date;
-	isB7SConnected: boolean;
+	nodeId: string
+	timestamp: Date
+	isB7SConnected: boolean
 }
 
-let batch: Ping[] = [];
+let batch: Ping[] = []
 pingQueue.process(async (job) => {
-	const { nodeId, metadata } = job.data;
+	const { nodeId, metadata } = job.data
 
 	batch.push({
 		nodeId,
 		timestamp: new Date(),
-		isB7SConnected: metadata?.isB7SConnected ?? false,
-	});
+		isB7SConnected: metadata?.isB7SConnected ?? false
+	})
 
 	if (batch.length >= batchSize) {
-		await flushBatch();
+		await flushBatch()
 	}
-});
+})
 
 async function flushBatch() {
 	if (batch.length > 0) {
 		try {
-			await NodePings.insertMany(batch);
-			batch = [];
+			await NodePings.insertMany(batch)
+			batch = []
 		} catch (error) {
-			console.error("Failed to insert batch:", error);
+			console.error('Failed to insert batch:', error)
 		}
 	}
 }
 
 // Flush remaining batch on process exit
-process.on("exit", async () => {
-	await flushBatch();
-});
+process.on('exit', async () => {
+	await flushBatch()
+})
 
-export default pingQueue;
+export default pingQueue
