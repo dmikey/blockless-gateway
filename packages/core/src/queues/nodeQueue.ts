@@ -1,15 +1,9 @@
-import Bull from 'bull'
 import mongoose from 'mongoose'
 
 import Nodes, { INodeModel } from '../models/node'
+import { createQueue } from './queueUtils'
 
-const nodeQueue = new Bull('node-updates', {
-	redis: {
-		host: '127.0.0.1',
-		port: 6379
-	}
-})
-
+const nodeQueue = createQueue('node-pings')
 const batchSize = 100 // Define the batch size
 interface JobData {
 	nodeId: string
