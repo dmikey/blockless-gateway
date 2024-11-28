@@ -4,6 +4,7 @@ import Nodes from '../models/node'
 import NodeRewards from '../models/nodeReward'
 import User from '../models/user'
 import { fillMissingDates } from './node'
+import type { Socials } from './nodeUserTypes'
 
 /**
  * Get user overview
@@ -251,6 +252,41 @@ export async function updateUserReferral(
 }
 
 /**
+ * Update user's social connections
+ *
+ * @param userId
+ * @param socials
+ * @returns
+ */
+export async function updateUserSocials(
+	userId: string,
+	socials: Socials
+): Promise<{ updated: boolean }> {
+	try {
+		const user = await User.findById(userId)
+
+		if (!user) {
+			throw new Error('User not found')
+		}
+
+		const updatedSocials = {
+			'socialConnections.discordId': socials.discordId,
+			'socialConnections.discordUsername': socials.discordUsername,
+			'socialConnections.discordConnected': socials.discordConnected,
+			'socialConnections.xId': socials.xId,
+			'socialConnections.xUsername': socials.xUsername,
+			'socialConnections.xConnected': socials.xConnected
+		}
+
+		await User.findByIdAndUpdate(userId, { $set: updatedSocials })
+		return { updated: true }
+	} catch (error) {
+		console.error('Failed to update user socials:', error)
+		throw new Error('Failed to update user socials')
+	}
+}
+
+/**
  * Get earnings for a user's nodes for a given period
  *
  * @param userId
@@ -260,7 +296,14 @@ export async function updateUserReferral(
 export async function getUserNodeEarnings(
 	userId: string,
 	period: 'daily' | 'monthly' = 'daily'
-): Promise<{ date: string; baseReward: number; totalReward: number; referralReward: number }[]> {
+): Promise<
+	{
+		date: string
+		baseReward: number
+		totalReward: number
+		referralReward: number
+	}[]
+> {
 	try {
 		const startDate = new Date()
 		const dateFormat = period === 'daily' ? '%Y-%m-%d' : '%Y-%m'
@@ -292,7 +335,9 @@ export async function getUserNodeEarnings(
 		// Get earnings for both direct and referral nodes
 		const [directEarnings, referralEarnings] = await Promise.all([
 			NodeRewards.aggregate([
-				{ $match: { nodeId: { $in: nodeIds }, timestamp: { $gte: startDate } } },
+				{
+					$match: { nodeId: { $in: nodeIds }, timestamp: { $gte: startDate } }
+				},
 				{
 					$group: {
 						_id: { $dateToString: { format: dateFormat, date: '$timestamp' } },
@@ -304,7 +349,12 @@ export async function getUserNodeEarnings(
 				{ $project: { _id: 0, date: '$_id', baseReward: 1, totalReward: 1 } }
 			]),
 			NodeRewards.aggregate([
-				{ $match: { nodeId: { $in: referralNodeIds }, timestamp: { $gte: startDate } } },
+				{
+					$match: {
+						nodeId: { $in: referralNodeIds },
+						timestamp: { $gte: startDate }
+					}
+				},
 				{
 					$group: {
 						_id: { $dateToString: { format: dateFormat, date: '$timestamp' } },

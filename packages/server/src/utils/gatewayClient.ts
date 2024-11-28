@@ -1,4 +1,5 @@
 import { Gateway } from '@blockless/gateway-core/dist/gateway'
+import type { Socials } from '@blockless/gateway-core/dist/services/nodeUserTypes'
 
 class GatewayClient {
 	gatewayClient: Gateway
@@ -22,3 +23,6 @@ class GatewayClient {
 
 const gatewayClient = GatewayClient.getInstance()
 export default gatewayClient
+
+// export types
+export type { Socials as nodeUserSocials }
