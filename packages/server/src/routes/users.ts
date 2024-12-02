@@ -41,6 +41,17 @@ export const register = (server: FastifyInstance, opts, next) => {
 		}
 	)
 
+	server.get(
+		'/socials',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { userId } = request.user
+			return gatewayClient.user.getSocials(userId)
+		}
+	)
+
 	server.post(
 		'/socials',
 		{

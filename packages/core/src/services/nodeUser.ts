@@ -252,11 +252,36 @@ export async function updateUserReferral(
 }
 
 /**
- * Update user's social connections
+ * Get user socials
+ *
+ * @param userId
+ * @returns Object containing user social connections
+ */
+export async function getUserSocials(userId: string): Promise<{
+	socials: Socials | undefined
+}> {
+	try {
+		const user = await User.findById(userId)
+
+		if (!user) {
+			throw new Error('User not found')
+		}
+
+		return {
+			socials: user.socialConnections
+		}
+	} catch (error) {
+		console.error('Failed to get user socials:', error)
+		throw new Error('Failed to get user socials')
+	}
+}
+
+/**
+ * Update user social connections
  *
  * @param userId
  * @param socials
- * @returns
+ * @returns Object { updated: true }
  */
 export async function updateUserSocials(
 	userId: string,
