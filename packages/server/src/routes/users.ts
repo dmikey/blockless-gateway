@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 
 import { REGEX_HOST_MATCH } from '../constants'
 import gatewayClient from '../utils/gatewayClient'
+import type { nodeUserSocials } from '../utils/gatewayClient'
 
 export const register = (server: FastifyInstance, opts, next) => {
 	server.addHook('onRequest', server.authenticate)
@@ -42,6 +43,29 @@ export const register = (server: FastifyInstance, opts, next) => {
 				// Handle the case where updateReferral does not exist
 				console.error('updateReferral method does not exist on gatewayClient.user')
 			}
+		}
+	)
+
+	server.get(
+		'/socials',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { userId } = request.user
+			return gatewayClient.user.getSocials(userId)
+		}
+	)
+
+	server.post(
+		'/socials',
+		{
+			constraints: { host: REGEX_HOST_MATCH }
+		},
+		async (request) => {
+			const { userId } = request.user
+			const socials = request.body as nodeUserSocials
+			return gatewayClient.user.updateSocials(userId, socials)
 		}
 	)
 

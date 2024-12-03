@@ -7,6 +7,7 @@ export * from './helpers'
 export * from './models'
 
 // Interfaces
+export * from './services/nodeUserTypes'
 export * from './errors/types'
 export * from './interfaces/headNode'
 

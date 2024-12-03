@@ -30,7 +30,9 @@ import {
 	getUserNodeEarnings,
 	getUserOverview,
 	getUserReferrals,
-	updateUserReferral
+	getUserSocials,
+	updateUserReferral,
+	updateUserSocials
 } from './services/nodeUser'
 
 interface GatewayOptions {
@@ -53,9 +55,11 @@ export class Gateway {
 	user: {
 		getOverview: OmitThisParameter<typeof getUserOverview>
 		getEarnings: OmitThisParameter<typeof getUserNodeEarnings>
-		getReferrals: OmitThisParameter<typeof getUserReferrals>
 		getLeaderboard: OmitThisParameter<typeof getUserLeaderboard>
+		getReferrals: OmitThisParameter<typeof getUserReferrals>
 		updateReferral: OmitThisParameter<typeof updateUserReferral>
+		getSocials: OmitThisParameter<typeof getUserSocials>
+		updateSocials: OmitThisParameter<typeof updateUserSocials>
 	}
 
 	functions: {
@@ -128,9 +132,11 @@ export class Gateway {
 		this.user = {
 			getOverview: getUserOverview.bind(this),
 			getEarnings: getUserNodeEarnings.bind(this),
-			getReferrals: getUserReferrals.bind(this),
 			getLeaderboard: getUserLeaderboard.bind(this),
-			updateReferral: updateUserReferral.bind(this)
+			getReferrals: getUserReferrals.bind(this),
+			updateReferral: updateUserReferral.bind(this),
+			getSocials: getUserSocials.bind(this),
+			updateSocials: updateUserSocials.bind(this)
 		}
 
 		this.nodes = {

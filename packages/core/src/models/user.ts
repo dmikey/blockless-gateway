@@ -10,7 +10,9 @@ export interface UserWallet {
 	walletAddress: string
 }
 
-export const UserWalletTypeKeys: { [key in UserWalletType]: UserWalletTypeKey } = {
+export const UserWalletTypeKeys: {
+	[key in UserWalletType]: UserWalletTypeKey
+} = {
 	eth: 'ethAddress',
 	metamask: 'ethAddress',
 	keplr: 'cosmosAddress',
@@ -29,6 +31,21 @@ const UserSchema = new mongoose.Schema(
 		cosmosAddress: String,
 		aptosAddress: String,
 		solanaAddress: String,
+
+		socialConnections: {
+			discordId: String,
+			discordUsername: String,
+			discordConnected: {
+				type: Boolean,
+				default: false
+			},
+			xId: String,
+			xUsername: String,
+			xConnected: {
+				type: Boolean,
+				default: false
+			}
+		},
 
 		refCode: {
 			type: String,
